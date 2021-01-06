@@ -1,0 +1,54 @@
+.flex-fill {
+	flex: 1 0 0;
+}
+
+#video {
+	flex: 7 0 0;
+}
+
+#iframe-cover {
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+}
+
+#cc {
+	flex: 3 0 0;
+	max-height: 100%;
+	overflow-y: auto;
+}
+
+.text {
+	height: calc(100% - 1rem);
+	border: none;
+	resize: none;
+}
+
+#subs {
+	bottom: 1rem;
+}
+
+#timeline {
+	height: 3rem;
+	overflow: hidden;
+	background-color: #333333;
+}
+
+#timeline-box {
+	top: 0;
+	bottom: 0;
+	transition: all 150ms;	
+}
+
+#cursor {
+	top: 0;
+	bottom: 0;
+}
+
+.timeline-sub {
+	top: 0;
+	bottom: 0;
+	border: white solid .5px;
+	background-color: #FFFFFF88;
+}
