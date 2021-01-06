@@ -52,3 +52,19 @@
 	border: white solid .5px;
 	background-color: #FFFFFF88;
 }
+
+.drag {
+	top: 0;
+	bottom: 0;
+	background-color: blue;
+}
+
+.drag-start {
+	width: 3px;
+	left: 0;
+}
+
+.drag-end {
+	width: 3px;
+	right: 0;
+}

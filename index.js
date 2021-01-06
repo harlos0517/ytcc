@@ -89,8 +89,6 @@ let main = new Vue({
 			return this.timelineStart + this.getPointerRatio() * this.getTimelineLength()
 		},
 		getTimelineLeft() {
-			let width = document.querySelector('#timeline').getBoundingClientRect().width
-			let ratio = width / this.getTimelineLength()
 			return 0 - this.timelineStart / this.getTimelineLength()
 		},
 		getMaxScale() {
@@ -119,6 +117,15 @@ let main = new Vue({
 		timelineScrollFix() {
 			this.timelineStart = Math.max(this.timelineStart, 0)
 			this.timelineStart = Math.min(this.timelineStart, this.videoLength - this.getTimelineLength())
+		},
+		getSubWidth(sub) {
+			let width = document.querySelector('#timeline').getBoundingClientRect().width
+			let duration = sub.endTime - sub.startTime
+			return width * duration / this.getTimelineLength()
+		},
+		isDragEnabled(sub) {
+			console.log(this.getSubWidth(sub))
+			return this.getSubWidth(sub) > 10
 		}
 	},
 	mounted: function() {

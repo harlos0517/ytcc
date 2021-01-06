@@ -66,6 +66,8 @@
 								right: 100 - sub.endTime * 100 / videoLength + '%'
 							}"
 						>
+							<div v-if="isDragEnabled(sub)" class="drag drag-start position-absolute"></div>
+							<div v-if="isDragEnabled(sub)" class="drag drag-end position-absolute"></div>
 						</div>
 					</div>
 					<div
