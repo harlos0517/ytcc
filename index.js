@@ -124,6 +124,7 @@ let main = new Vue({
 	mounted: function() {
 		let that = this
 		that.videoId = (new URL(document.location.href)).searchParams.get('v')
+		if (!that.videoId || !that.videoId.length) that.videoId = 'Jt-5wQroOXA'
 		that.videoIdInput = that.videoId
 		that.addKeyControl()
 		window.onYouTubeIframeAPIReady = function () {
