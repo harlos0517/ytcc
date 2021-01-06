@@ -55,6 +55,7 @@ let main = new Vue({
 					break
 				}
 			}
+			this.setCookie()
 		},
 		getTime() {
 			return Math.round(this.player.getCurrentTime()*100)/100
@@ -126,6 +127,33 @@ let main = new Vue({
 		isDragEnabled(sub) {
 			console.log(this.getSubWidth(sub))
 			return this.getSubWidth(sub) > 10
+		},
+		setCookie() {
+			document.cookie = `${this.videoId}=${
+				encodeURIComponent(JSON.stringify(this.subtitles.map(sub=>{
+					return {
+						startTime: sub.startTime,
+						endTime: sub.endTime,
+						text: sub.text
+					}
+				})))
+			}`
+		},
+		getCookie() {
+			let value = decodeURIComponent(
+				document.cookie.split('; ')
+					.find(row => row.startsWith(this.videoId))
+					.split('=')[1]
+			)
+			let obj = JSON.parse(value)
+			this.subtitles = obj.map(sub=>{
+				return {
+					startTime: sub.startTime,
+					endTime: sub.endTime,
+					text: sub.text,
+					active: false
+				}
+			})
 		}
 	},
 	mounted: function() {
@@ -133,6 +161,7 @@ let main = new Vue({
 		that.videoId = (new URL(document.location.href)).searchParams.get('v')
 		if (!that.videoId || !that.videoId.length) that.videoId = 'Jt-5wQroOXA'
 		that.videoIdInput = that.videoId
+		that.getCookie()
 		that.addKeyControl()
 		window.onYouTubeIframeAPIReady = function () {
 			video = document.querySelector('#iframe>iframe')
