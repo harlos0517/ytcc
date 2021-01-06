@@ -14,6 +14,12 @@ let main = new Vue({
 		mousePosition: {x: 0, y: 0}
 	},
 	methods: {
+		// startup
+		fetchVideoId() {
+			this.videoId = (new URL(document.location.href)).searchParams.get('v')
+			if (!this.videoId || !this.videoId.length) this.videoId = 'Jt-5wQroOXA'
+			this.videoIdInput = this.videoId
+		},
 		addKeyControl() {
 			let that = this
 			window.addEventListener('keydown', e => {
@@ -41,26 +47,90 @@ let main = new Vue({
 				}
 			}, true)
 		},
-		addSubtitle() {
-			if (![1, 2, 3].includes(this.state)) return
-			if (this.subtitles.filter(x=>x.active).length) return
-			let newSub = {
-				startTime: Math.max(0, this.getTime() - 1),
-				endTime: this.getTime(),
-				text: '',
-				active: false
-			}
-			for (let i = 0;; i++) {
-				let thisSub = this.subtitles[i]
-				if (!thisSub || thisSub.endTime > newSub.endTime) {
-					let start = this.subtitles[i-1] ? this.subtitles[i-1].endTime : 0
-					newSub.startTime = Math.max(start, newSub.startTime)
-					if (newSub.endTime - newSub.startTime < 0.1) return
-					this.subtitles.splice(i, 0, newSub)
-					break
+		addTimelineControl() {
+			let that = this
+			document.querySelector('#timeline').addEventListener('wheel', e => {
+				e.preventDefault()
+				if (e.ctrlKey) {
+					that.timelineZoom(e.deltaY)
+				} else {
+					that.timelineScroll(e.deltaY)
 				}
+			})
+		},
+		getCookie() {
+			let value = decodeURIComponent(
+				document.cookie.split('; ')
+					.find(row => row.startsWith(this.videoId))
+					.split('=')[1]
+			)
+			let obj = JSON.parse(value)
+			this.subtitles = obj.map(sub=>{
+				return {
+					startTime: sub.startTime,
+					endTime: sub.endTime,
+					text: sub.text,
+					active: false
+				}
+			})
+		},
+		startPlayer() {
+			let that = this
+			video = document.querySelector('#iframe>iframe')
+			that.player = new YT.Player(video, {
+				events: {
+					'onReady': e => {
+						that.videoLength = that.player.getDuration()
+						console.log('READY')
+					},
+					'onStateChange': e => {
+						console.log(`STATE: ${e.data}`)
+						that.state = e.data
+					}
+				}
+			})
+			window.requestAnimationFrame(this.update)
+		},
+		// update routine
+		update() {
+			window.requestAnimationFrame(this.update)
+			this.updatePointer()
+			this.updateCursor()
+			this.setSubActive()
+			this.autoScroll()
+		},
+		updatePointer() {
+			let that = this
+			window.addEventListener('mousemove', e => {
+				that.mousePosition.x = e.x
+				that.mousePosition.y = e.y
+			}, true)
+		},
+		updateCursor() {
+			try { this.cursor = this.getTime() }
+			catch { return }
+		},
+		setSubActive() {
+			// TODO : OPT ALGO
+			this.subtitles.forEach(sub=>{
+				sub.active = this.active(sub, this.cursor)
+			})
+			// Yeah fuck the algo, brutal works la
+		},
+		autoScroll() {
+			if (this.state === 1) {
+				let ratio = 0.8
+				if (!this.isCursorInView())
+					this.timelineStart = this.cursor - this.getTimelineLength() * (1 - ratio)
+				else if (this.cursor > this.timelineStart + this.getTimelineLength() * ratio) {
+					let timelineStart = this.cursor - this.getTimelineLength() * ratio
+					if (this.timelineStart + this.getTimelineLength() < this.videoLength)
+						this.timelineStart = timelineStart
+				}
+				this.timelineScrollFix()
 			}
 		},
+		// time display utilities
 		getTime() {
 			return Math.round(this.player.getCurrentTime()*100)/100
 		},
@@ -73,12 +143,10 @@ let main = new Vue({
 		getSec(time) {
 			return (Math.round(time%60*100)/100).toFixed(2).toString().padStart(5, '0')
 		},
-		seek(time) {
-			this.player.seekTo(time, true)
-		},
 		active(sub, time) {
 			return (time >= sub.startTime && time < sub.endTime)
 		},
+		// timeline utilities
 		getPointerRatio() {
 			let rect = document.querySelector('#timeline').getBoundingClientRect()
 			let x = this.mousePosition.x - rect.left //x position within the element.
@@ -102,7 +170,23 @@ let main = new Vue({
 		isCursorInView() {
 			return this.cursor > this.timelineStart && this.cursor < this.getTimelineEnd()
 		},
-		timelineClick(e) {
+		timelineScrollFix() {
+			this.timelineStart = Math.max(this.timelineStart, 0)
+			this.timelineStart = Math.min(this.timelineStart, this.videoLength - this.getTimelineLength())
+		},
+		getSubWidth(sub) {
+			let width = document.querySelector('#timeline').getBoundingClientRect().width
+			let duration = sub.endTime - sub.startTime
+			return width * duration / this.getTimelineLength()
+		},
+		seek(time) {
+			this.player.seekTo(time, true)
+		},
+		isDragEnabled(sub) {
+			return this.getSubWidth(sub) > 10
+		},
+		// timeline controls
+		timelineClick() {
 			this.seek(this.getPointerTime())
 		},
 		timelineZoom(delta) {
@@ -119,18 +203,28 @@ let main = new Vue({
 			this.timelineStart = this.timelineStart + delta * this.getTimelineLength() / 1000
 			this.timelineScrollFix()
 		},
-		timelineScrollFix() {
-			this.timelineStart = Math.max(this.timelineStart, 0)
-			this.timelineStart = Math.min(this.timelineStart, this.videoLength - this.getTimelineLength())
+		// subtitle controls
+		addSubtitle() {
+			if (![1, 2, 3].includes(this.state)) return
+			if (this.subtitles.filter(x=>x.active).length) return
+			let newSub = {
+				startTime: Math.max(0, this.cursor - 1),
+				endTime: this.cursor,
+				text: '',
+				active: false
+			}
+			for (let i = 0;; i++) {
+				let thisSub = this.subtitles[i]
+				if (!thisSub || thisSub.endTime > newSub.endTime) {
+					let start = this.subtitles[i-1] ? this.subtitles[i-1].endTime : 0
+					newSub.startTime = Math.max(start, newSub.startTime)
+					if (newSub.endTime - newSub.startTime < 0.1) return
+					this.subtitles.splice(i, 0, newSub)
+					break
+				}
+			}
 		},
-		getSubWidth(sub) {
-			let width = document.querySelector('#timeline').getBoundingClientRect().width
-			let duration = sub.endTime - sub.startTime
-			return width * duration / this.getTimelineLength()
-		},
-		isDragEnabled(sub) {
-			return this.getSubWidth(sub) > 10
-		},
+		// saving controls
 		save() {
 			document.cookie = `${this.videoId}=${
 				encodeURIComponent(JSON.stringify(this.subtitles.map(sub=>{
@@ -142,84 +236,12 @@ let main = new Vue({
 				})))
 			}`
 		},
-		getCookie() {
-			let value = decodeURIComponent(
-				document.cookie.split('; ')
-					.find(row => row.startsWith(this.videoId))
-					.split('=')[1]
-			)
-			let obj = JSON.parse(value)
-			this.subtitles = obj.map(sub=>{
-				return {
-					startTime: sub.startTime,
-					endTime: sub.endTime,
-					text: sub.text,
-					active: false
-				}
-			})
-		}
 	},
 	mounted: function() {
-		let that = this
-		that.videoId = (new URL(document.location.href)).searchParams.get('v')
-		if (!that.videoId || !that.videoId.length) that.videoId = 'Jt-5wQroOXA'
-		that.videoIdInput = that.videoId
-		that.getCookie()
-		that.addKeyControl()
-		window.onYouTubeIframeAPIReady = function () {
-			video = document.querySelector('#iframe>iframe')
-			that.player = new YT.Player(video, {
-				events: {
-					'onReady': e => {
-						that.videoLength = that.player.getDuration()
-						console.log('READY')
-					},
-					'onStateChange': e => {
-						console.log(`STATE: ${e.data}`)
-						that.state = e.data
-					}
-				}
-			})
-			window.requestAnimationFrame(update)
-		}
-		function update() {
-			window.requestAnimationFrame(update)
-			let newCursor = 0
-			try { newCursor = that.player.getCurrentTime() }
-			catch { return }
-
-			// TODO : OPT ALGO
-			that.subtitles.forEach(sub=>{
-				sub.active = that.active(sub, newCursor)
-			})
-			// Yeah fuck the algo, brutal works la
-
-			that.cursor = newCursor
-
-			// auto scroll
-			if (that.state === 1) {
-				let ratio = 0.8
-				if (!that.isCursorInView())
-					that.timelineStart = that.cursor - that.getTimelineLength() * (1 - ratio)
-				else if (that.cursor > that.timelineStart + that.getTimelineLength() * ratio) {
-					let timelineStart = that.cursor - that.getTimelineLength() * ratio
-					if (that.timelineStart + that.getTimelineLength() < that.videoLength)
-						that.timelineStart = timelineStart
-				}
-				that.timelineScrollFix()
-			}
-		}
-		window.addEventListener('mousemove', e => {
-			that.mousePosition.x = e.x
-			that.mousePosition.y = e.y
-		}, true)
-		document.querySelector('#timeline').addEventListener('wheel', e => {
-			e.preventDefault()
-			if (e.ctrlKey) {
-				that.timelineZoom(e.deltaY)
-			} else {
-				that.timelineScroll(e.deltaY)
-			}
-		})
+		this.fetchVideoId()
+		this.getCookie()
+		this.addKeyControl()
+		this.addTimelineControl()
+		window.onYouTubeIframeAPIReady = this.startPlayer
 	}
 })
