@@ -1,6 +1,8 @@
 let main = new Vue({
 	el: '#main',
 	data: {
+		videoId: '',
+		videoIdInput: '',
 		subtitles: [],
 		player: null,
 		state: 5,
@@ -12,6 +14,28 @@ let main = new Vue({
 		mousePosition: {x: 0, y: 0}
 	},
 	methods: {
+		addKeyControl() {
+			let that = this
+			window.addEventListener('keydown', e => {
+				if (!e.ctrlKey) return
+				switch (e.key) {
+					case 'Enter':
+						e.preventDefault()
+						that.addSubtitle()
+						break
+					case ' ':
+						e.preventDefault()
+						if (that.state !== 1) {
+							try { that.player.playVideo() }
+							catch { break }
+						} else  {
+							try { that.player.pauseVideo() }
+							catch { break }
+						}
+						break
+				}
+			}, true)
+		},
 		addSubtitle() {
 			if (![1, 2, 3].includes(this.state)) return
 			if (this.subtitles.filter(x=>x.active).length) return
@@ -99,6 +123,9 @@ let main = new Vue({
 	},
 	mounted: function() {
 		let that = this
+		that.videoId = (new URL(document.location.href)).searchParams.get('v')
+		that.videoIdInput = that.videoId
+		that.addKeyControl()
 		window.onYouTubeIframeAPIReady = function () {
 			video = document.querySelector('#iframe>iframe')
 			that.player = new YT.Player(video, {
@@ -114,25 +141,6 @@ let main = new Vue({
 				}
 			})
 			window.requestAnimationFrame(update)
-			window.addEventListener('keydown', e => {
-				if (!e.ctrlKey) return
-				switch (e.key) {
-					case 'Enter':
-						e.preventDefault()
-						that.addSubtitle()
-						break
-					case ' ':
-						e.preventDefault()
-						if (that.state !== 1) {
-							try { that.player.playVideo() }
-							catch { break }
-						} else  {
-							try { that.player.pauseVideo() }
-							catch { break }
-						}
-						break
-				}
-			}, true)
 		}
 		function update() {
 			window.requestAnimationFrame(update)

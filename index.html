@@ -24,11 +24,19 @@
 		class="w-100 vh-100 d-flex flex-row position-relative"
 	>
 		<div id="video" class="d-flex flex-column">
+			<div id="url" class="p-3">
+				<form action="">
+					<label for="video-id" class="pe-3">Video ID</label>
+					<input id="video-id" type="text" name="v" v-model="videoIdInput" />
+					<button>Refresh</button>
+				</form>
+			</div>
 			<div id="iframe" class="position-relative flex-fill">
 				<iframe
+					v-if="videoId && videoId.length"
 					width="100%"
 					height="100%"
-					src="https://www.youtube.com/embed/Jt-5wQroOXA?enablejsapi=1&disablekb=1&fs=0&modestbranding=1&mute=1"
+					:src="`https://www.youtube.com/embed/${videoId}?enablejsapi=1&disablekb=1&fs=0&modestbranding=1&mute=1`"
 					frameborder="0"
 				></iframe>
 				<!-- <div id="iframe-cover" class="position-absolute"></div> -->
