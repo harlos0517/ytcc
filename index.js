@@ -33,6 +33,11 @@ let main = new Vue({
 							catch { break }
 						}
 						break
+					case 's':
+						e.preventDefault()
+						this.save()
+						console.log('SAVED')
+						break
 				}
 			}, true)
 		},
@@ -55,7 +60,6 @@ let main = new Vue({
 					break
 				}
 			}
-			this.setCookie()
 		},
 		getTime() {
 			return Math.round(this.player.getCurrentTime()*100)/100
@@ -125,10 +129,9 @@ let main = new Vue({
 			return width * duration / this.getTimelineLength()
 		},
 		isDragEnabled(sub) {
-			console.log(this.getSubWidth(sub))
 			return this.getSubWidth(sub) > 10
 		},
-		setCookie() {
+		save() {
 			document.cookie = `${this.videoId}=${
 				encodeURIComponent(JSON.stringify(this.subtitles.map(sub=>{
 					return {
