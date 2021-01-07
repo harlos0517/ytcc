@@ -24,7 +24,7 @@
 		class="w-100 vh-100 d-flex flex-row position-relative"
 	>
 		<div id="video" class="d-flex flex-column">
-			<div id="url" class="p-2 d-flex flex-row align-items-center">
+			<div id="top" class="p-2 d-flex flex-row align-items-center">
 				<form action="" class="pe-3">
 					<label for="video-id" class="pe-3">Video ID</label>
 					<input id="video-id" type="text" name="v" v-model="videoIdInput" />
@@ -55,7 +55,12 @@
 					</div>
 				</div>
 			</div>
-			<div id="timeline" class="position-relative" @click="timelineClick">
+			<div
+				id="timeline"
+				class="position-relative"
+				@click="timelineClick"
+				@wheel="timelineWheel"
+			>
 				<div
 					id="timeline-box"
 					class="position-absolute"

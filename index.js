@@ -1,3 +1,8 @@
+// alias
+const getEle = sel => document.querySelector(sel)
+const getRect = sel => getEle(sel).getBoundingClientRect()
+const listen = window.addEventListener
+
 let main = new Vue({
 	el: '#main',
 	data: {
@@ -22,55 +27,6 @@ let main = new Vue({
 			if (!this.videoId || !this.videoId.length) this.videoId = 'Jt-5wQroOXA'
 			this.videoIdInput = this.videoId
 		},
-		addKeyControl() {
-			let that = this
-			window.addEventListener('keydown', e => {
-				if (!e.ctrlKey) return
-				switch (e.key) {
-					case 'Enter':
-						e.preventDefault()
-						that.addSubtitle()
-						break
-					case ' ':
-						e.preventDefault()
-						if (that.state !== 1) {
-							try { that.player.playVideo() }
-							catch { break }
-						} else  {
-							try { that.player.pauseVideo() }
-							catch { break }
-						}
-						break
-					case 's':
-						e.preventDefault()
-						that.save()
-						break
-					case 'e':
-						e.preventDefault()
-						that.exportSRT()
-						break
-					case 'i':
-						e.preventDefault()
-						that.importSRT()
-						break
-					case 'h':
-						e.preventDefault()
-						that.triggerHelp()
-						break
-				}
-			}, true)
-		},
-		addTimelineControl() {
-			let that = this
-			document.querySelector('#timeline').addEventListener('wheel', e => {
-				e.preventDefault()
-				if (e.ctrlKey) {
-					that.timelineZoom(e.deltaY)
-				} else {
-					that.timelineScroll(e.deltaY)
-				}
-			})
-		},
 		getCookie() {
 			let cookie = document.cookie.split('; ')
 				.find(row => row.startsWith(`${this.videoId}=`))
@@ -86,9 +42,39 @@ let main = new Vue({
 				}
 			})
 		},
+		listenPointer() {
+			listen('mousemove', e => {
+				this.mousePosition.x = e.x
+				this.mousePosition.y = e.y
+			}, true)
+		},
+		addKeyControl() {
+			this.listenKey('Enter', true, this.addSubtitle)
+			this.listenKey(' ', true, this.triggerPlay)
+			this.listenKey('s', true, this.save)
+			this.listenKey('e', true, this.exportSRT)
+			this.listenKey('i', true, this.importSRT)
+			this.listenKey('h', true, this.triggerHelp)
+		},
+		listenKey(key, ctrl, f) {
+			listen('keydown', e => {
+				if (e.key !== key) return
+				if (ctrl !== e.ctrlKey) return
+				e.preventDefault()
+				f()
+			})
+		},
+		triggerPlay() {
+			try {
+				if (this.state !== 1) this.player.playVideo()
+				else this.player.pauseVideo()
+			} catch {
+				console.log('Player is still not ready.')
+			}
+		},
 		startPlayer() {
 			let that = this
-			video = document.querySelector('#iframe>iframe')
+			video = getEle('#iframe>iframe')
 			that.player = new YT.Player(video, {
 				events: {
 					'onReady': e => {
@@ -109,13 +95,6 @@ let main = new Vue({
 			this.updateCursor()
 			this.setSubActive()
 			this.autoScroll()
-		},
-		listenPointer() {
-			let that = this
-			window.addEventListener('mousemove', e => {
-				that.mousePosition.x = e.x
-				that.mousePosition.y = e.y
-			}, true)
 		},
 		updateCursor() {
 			try { this.cursor = this.getTime() }
@@ -159,7 +138,7 @@ let main = new Vue({
 		},
 		// timeline utilities
 		getPointerRatio() {
-			let rect = document.querySelector('#timeline').getBoundingClientRect()
+			let rect = getRect('#timeline')
 			let x = this.mousePosition.x - rect.left //x position within the element.
 			return x / rect.width
 		},
@@ -186,7 +165,7 @@ let main = new Vue({
 			this.timelineStart = Math.min(this.timelineStart, this.videoLength - this.getTimelineLength())
 		},
 		getSubWidth(sub) {
-			let width = document.querySelector('#timeline').getBoundingClientRect().width
+			let width = getRect('#timeline').width
 			let duration = sub.endTime - sub.startTime
 			return width * duration / this.getTimelineLength()
 		},
@@ -197,6 +176,14 @@ let main = new Vue({
 			return this.getSubWidth(sub) > 10
 		},
 		// timeline controls
+		timelineWheel(e) {
+			e.preventDefault()
+			if (e.ctrlKey) {
+				this.timelineZoom(e.deltaY)
+			} else {
+				this.timelineScroll(e.deltaY)
+			}
+		},
 		timelineClick() {
 			this.seek(this.getPointerTime())
 		},
@@ -277,7 +264,7 @@ ${sub.text.split('\n').filter(x=>x.length).join('\n')}\n\n`
 
 			// Solution on https://gist.github.com/danallison/3ec9d5314788b337b682
 			let blob = new Blob([srt], { type: 'text/plain' })
-			var ele = document.querySelector('#export')
+			var ele = getEle('#export')
 			ele.download = `Youtube_${this.videoId}.srt`
 			ele.href = URL.createObjectURL(blob)
 			ele.dataset.downloadurl = ['text/plain', ele.download, ele.href].join(':')
@@ -286,11 +273,11 @@ ${sub.text.split('\n').filter(x=>x.length).join('\n')}\n\n`
 		},
 		importSRT() {
 			this.setInfoText('IMPORTING...')
-			var ele = document.querySelector('#import')
+			var ele = getEle('#import')
 			ele.click()
 		},
 		async getSRT() {
-			var ele = document.querySelector('#import')
+			var ele = getEle('#import')
 			if (!ele.files || !ele.files.length) return
 			let srt = await ele.files[0].text()
 			let subs = parseSRT(srt)
@@ -307,7 +294,7 @@ ${sub.text.split('\n').filter(x=>x.length).join('\n')}\n\n`
 		},
 		// other
 		setInfoText(text) {
-			let target = document.querySelector('#info-text')
+			let target = getEle('#info-text')
 			target.style.transition = ''
 			target.style.opacity = 1
 			this.infoText = text
@@ -325,7 +312,6 @@ ${sub.text.split('\n').filter(x=>x.length).join('\n')}\n\n`
 		this.getCookie()
 		this.listenPointer()
 		this.addKeyControl()
-		this.addTimelineControl()
 		window.onYouTubeIframeAPIReady = this.startPlayer
 	}
 })
