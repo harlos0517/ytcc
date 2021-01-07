@@ -107,6 +107,7 @@
 					class="text p-0 bg-dark text-white flex-fill"
 					placeholder="Enter Subtitles Here"
 					v-model="sub.text"
+					v-on:blur="save"
 				></textarea>
 			</div>
 			<button
