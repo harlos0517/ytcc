@@ -245,6 +245,7 @@ let main = new Vue({
 			this.setInfoText('SAVED')
 		},
 		exportSRT() {
+			this.setInfoText('EXPORTED')
 			let that = this
 			let getTimecode = function(time) {
 				let hh = that.getHour(time)
@@ -256,23 +257,40 @@ let main = new Vue({
 			let srt = this.subtitles.filter(sub => 
 				sub.text.replace('\n', '').length
 			).map((sub, i) =>
-				`${i}
+				`${i+1}
 ${getTimecode(sub.startTime)} --> ${getTimecode(sub.endTime)}
 ${sub.text.split('\n').filter(x=>x.length).join('\n')}\n\n`
 			).join('')
 
 			// Solution on https://gist.github.com/danallison/3ec9d5314788b337b682
 			let blob = new Blob([srt], { type: 'text/plain' })
-			var a = document.createElement('a')
-			a.style.display = "none"
-			a.download = `Youtube_${this.videoId}.srt`
-			a.href = URL.createObjectURL(blob)
-			a.dataset.downloadurl = ['text/plain', a.download, a.href].join(':')
-			document.body.appendChild(a)
-			a.click()
-			document.body.removeChild(a)
-			setTimeout(function() { URL.revokeObjectURL(a.href) }, 1500)
-			this.setInfoText('EXPORTING')
+			var ele = document.querySelector('#export')
+			ele.download = `Youtube_${this.videoId}.srt`
+			ele.href = URL.createObjectURL(blob)
+			ele.dataset.downloadurl = ['text/plain', ele.download, ele.href].join(':')
+			ele.click()
+			// setTimeout(function() { URL.revokeObjectURL(ele.href) }, 1500)
+		},
+		importSRT() {
+			this.setInfoText('IMPORTING...')
+			var ele = document.querySelector('#import')
+			ele.click()
+		},
+		async getSRT() {
+			var ele = document.querySelector('#import')
+			if (!ele.files || !ele.files.length) return
+			let srt = await ele.files[0].text()
+			let subs = parseSRT(srt)
+			this.subtitles = subs.map(sub => {
+				return {
+					startTime: sub.start,
+					endTime: sub.end,
+					text: sub.text,
+					active: false
+				}
+			})
+			ele.value = ''
+			this.setInfoText('IMPORTED')
 		},
 		// info text
 		setInfoText(text) {
