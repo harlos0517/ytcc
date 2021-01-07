@@ -237,6 +237,12 @@ let main = new Vue({
 				}
 			}
 		},
+		deleteSubtitle(sub) {
+			let i = this.subtitles.findIndex(s => s === sub)
+			if (i < 0) return
+			this.subtitles.splice(i, 1)
+			this.setInfoText('DELETED SUBTITLE')
+		},
 		// saving controls
 		save() {
 			document.cookie = `${this.videoId}=${

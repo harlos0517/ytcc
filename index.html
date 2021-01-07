@@ -24,7 +24,7 @@
 		class="w-100 vh-100 d-flex flex-row position-relative"
 	>
 		<div id="video" class="d-flex flex-column">
-			<div id="url" class="p-2 d-flex flex-row">
+			<div id="url" class="p-2 d-flex flex-row align-items-center">
 				<form action="" class="pe-3">
 					<label for="video-id" class="pe-3">Video ID</label>
 					<input id="video-id" type="text" name="v" v-model="videoIdInput" />
@@ -92,7 +92,7 @@
 		<div id="cc" class="p-2">
 			<div
 				v-for="sub in subtitles"
-				class="p-2 d-flex flex-row"
+				class="p-2 d-flex flex-row align-items-center"
 				:class="{'bg-secondary': sub.active}"
 			>
 				<div class="time me-3" @click="seek(sub.startTime)">
@@ -108,11 +108,17 @@
 					</div>
 				</div>
 				<textarea
-					class="text p-0 bg-dark text-white flex-fill"
+					class="text p-0 bg-dark text-white flex-fill me-3"
 					placeholder="Enter Subtitles Here"
 					v-model="sub.text"
 					@blur="save"
 				></textarea>
+				<button
+					type="button"
+					class="btn-close close btn-close-white"
+					aria-label="Close"
+					@click="deleteSubtitle(sub)"
+				></button>
 			</div>
 			<button
 				type="button"
