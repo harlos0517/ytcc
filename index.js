@@ -11,7 +11,8 @@ let main = new Vue({
 		videoLength: 0,
 		timelineScale: 1,
 		timelineStart: 0,
-		mousePosition: {x: 0, y: 0}
+		mousePosition: {x: 0, y: 0},
+		infoText: ''
 	},
 	methods: {
 		// startup
@@ -41,8 +42,13 @@ let main = new Vue({
 						break
 					case 's':
 						e.preventDefault()
-						this.save()
+						that.save()
 						console.log('SAVED')
+						break
+					case 'e':
+						e.preventDefault()
+						that.exportSRT()
+						console.log('EXPORTING')
 						break
 				}
 			}, true)
@@ -81,10 +87,10 @@ let main = new Vue({
 				events: {
 					'onReady': e => {
 						that.videoLength = that.player.getDuration()
-						console.log('READY')
+						this.setInfoText('READY')
 					},
 					'onStateChange': e => {
-						console.log(`STATE: ${e.data}`)
+						this.setInfoText(`STATE: ${e.data}`)
 						that.state = e.data
 					}
 				}
@@ -220,6 +226,7 @@ let main = new Vue({
 					newSub.startTime = Math.max(start, newSub.startTime)
 					if (newSub.endTime - newSub.startTime < 0.1) return
 					this.subtitles.splice(i, 0, newSub)
+					this.setInfoText('ADDED SUBTITLE')
 					break
 				}
 			}
@@ -235,7 +242,49 @@ let main = new Vue({
 					}
 				})))
 			}`
+			this.setInfoText('SAVED')
 		},
+		exportSRT() {
+			let that = this
+			let getTimecode = function(time) {
+				let hh = that.getHour(time)
+				let mm = that.getMin(time)
+				let ss = that.getSec(time).slice(0, 2)
+				let ms = that.getSec(time).slice(3, 5) + '0'
+				return `${hh}:${mm}:${ss},${ms}`
+			}
+			let srt = this.subtitles.filter(sub => 
+				sub.text.replace('\n', '').length
+			).map((sub, i) =>
+				`${i}
+${getTimecode(sub.startTime)} --> ${getTimecode(sub.endTime)}
+${sub.text.split('\n').filter(x=>x.length).join('\n')}\n\n`
+			).join('')
+
+			// Solution on https://gist.github.com/danallison/3ec9d5314788b337b682
+			let blob = new Blob([srt], { type: 'text/plain' })
+			var a = document.createElement('a')
+			a.style.display = "none"
+			a.download = `Youtube_${this.videoId}.srt`
+			a.href = URL.createObjectURL(blob)
+			a.dataset.downloadurl = ['text/plain', a.download, a.href].join(':')
+			document.body.appendChild(a)
+			a.click()
+			document.body.removeChild(a)
+			setTimeout(function() { URL.revokeObjectURL(a.href) }, 1500)
+			this.setInfoText('EXPORTING')
+		},
+		// info text
+		setInfoText(text) {
+			let target = document.querySelector('#info-text')
+			target.style.transition = ''
+			target.style.opacity = 1
+			this.infoText = text
+			setTimeout(()=>{
+				target.style.transition = 'opacity 1s'
+				target.style.opacity = 0.5
+			}, 100)
+		}
 	},
 	mounted: function() {
 		this.fetchVideoId()

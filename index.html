@@ -24,12 +24,15 @@
 		class="w-100 vh-100 d-flex flex-row position-relative"
 	>
 		<div id="video" class="d-flex flex-column">
-			<div id="url" class="p-3">
-				<form action="">
+			<div id="url" class="p-3 d-flex flex-row">
+				<form action="" class="pe-3">
 					<label for="video-id" class="pe-3">Video ID</label>
 					<input id="video-id" type="text" name="v" v-model="videoIdInput" />
 					<button>Refresh</button>
 				</form>
+				<div id="info-text" class="flex-fill"><span>{{ infoText }}</span></div>
+				<button v-on:click="save">Save</button>
+				<button v-on:click="exportSRT">Export as SRT</button>
 			</div>
 			<div id="iframe" class="position-relative flex-fill">
 				<iframe
