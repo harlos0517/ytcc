@@ -72,11 +72,10 @@ let main = new Vue({
 			})
 		},
 		getCookie() {
-			let value = decodeURIComponent(
-				document.cookie.split('; ')
-					.find(row => row.startsWith(this.videoId))
-					.split('=')[1]
-			)
+			let cookie = document.cookie.split('; ')
+				.find(row => row.startsWith(`${this.videoId}=`))
+			if (!cookie) return
+			let value = decodeURIComponent(cookie.split('=')[1])
 			let obj = JSON.parse(value)
 			this.subtitles = obj.map(sub=>{
 				return {

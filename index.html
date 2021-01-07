@@ -24,17 +24,17 @@
 		class="w-100 vh-100 d-flex flex-row position-relative"
 	>
 		<div id="video" class="d-flex flex-column">
-			<div id="url" class="p-3 d-flex flex-row">
+			<div id="url" class="p-2 d-flex flex-row">
 				<form action="" class="pe-3">
 					<label for="video-id" class="pe-3">Video ID</label>
 					<input id="video-id" type="text" name="v" v-model="videoIdInput" />
-					<button>Refresh</button>
+					<button class="btn btn-secondary m-1">Refresh</button>
 				</form>
-				<div id="info-text" class="flex-fill p-1"><span>{{ infoText }}</span></div>
-				<button @click="save">Save</button>
-				<button @click="exportSRT">Export SRT</button>
-				<button @click="importSRT">Import SRT</button>
-				<button @click="triggerHelp">Help</button>
+				<div id="info-text" class="flex-fill p-2"><span>{{ infoText }}</span></div>
+				<button class="btn btn-secondary m-1" @click="save">Save</button>
+				<button class="btn btn-secondary m-1" @click="exportSRT">Export SRT</button>
+				<button class="btn btn-secondary m-1" @click="importSRT">Import SRT</button>
+				<button class="btn btn-secondary m-1" @click="triggerHelp">Help</button>
 				<a id="export" class="d-none"></a>
 				<input id="import" class="d-none" type="file" @change="getSRT">
 			</div>
