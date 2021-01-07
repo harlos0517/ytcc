@@ -106,12 +106,11 @@ let main = new Vue({
 		// update routine
 		update() {
 			window.requestAnimationFrame(this.update)
-			this.updatePointer()
 			this.updateCursor()
 			this.setSubActive()
 			this.autoScroll()
 		},
-		updatePointer() {
+		listenPointer() {
 			let that = this
 			window.addEventListener('mousemove', e => {
 				that.mousePosition.x = e.x
@@ -233,6 +232,7 @@ let main = new Vue({
 					if (newSub.endTime - newSub.startTime < 0.1) return
 					this.subtitles.splice(i, 0, newSub)
 					this.setInfoText('ADDED SUBTITLE')
+					this.save()
 					break
 				}
 			}
@@ -242,6 +242,7 @@ let main = new Vue({
 			if (i < 0) return
 			this.subtitles.splice(i, 1)
 			this.setInfoText('DELETED SUBTITLE')
+			this.save()
 		},
 		// saving controls
 		save() {
@@ -322,6 +323,7 @@ ${sub.text.split('\n').filter(x=>x.length).join('\n')}\n\n`
 	mounted: function() {
 		this.fetchVideoId()
 		this.getCookie()
+		this.listenPointer()
 		this.addKeyControl()
 		this.addTimelineControl()
 		window.onYouTubeIframeAPIReady = this.startPlayer
