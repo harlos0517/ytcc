@@ -69,3 +69,10 @@
 	width: 3px;
 	right: 0;
 }
+
+#help {
+	left: 20%;
+	right: 20%;
+	top: 10%;
+	background-color: #000000CC;
+}

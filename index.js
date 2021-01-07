@@ -12,7 +12,8 @@ let main = new Vue({
 		timelineScale: 1,
 		timelineStart: 0,
 		mousePosition: {x: 0, y: 0},
-		infoText: ''
+		infoText: '',
+		showHelp: false
 	},
 	methods: {
 		// startup
@@ -43,12 +44,18 @@ let main = new Vue({
 					case 's':
 						e.preventDefault()
 						that.save()
-						console.log('SAVED')
 						break
 					case 'e':
 						e.preventDefault()
 						that.exportSRT()
-						console.log('EXPORTING')
+						break
+					case 'i':
+						e.preventDefault()
+						that.importSRT()
+						break
+					case 'h':
+						e.preventDefault()
+						that.triggerHelp()
 						break
 				}
 			}, true)
@@ -292,7 +299,7 @@ ${sub.text.split('\n').filter(x=>x.length).join('\n')}\n\n`
 			ele.value = ''
 			this.setInfoText('IMPORTED')
 		},
-		// info text
+		// other
 		setInfoText(text) {
 			let target = document.querySelector('#info-text')
 			target.style.transition = ''
@@ -302,6 +309,9 @@ ${sub.text.split('\n').filter(x=>x.length).join('\n')}\n\n`
 				target.style.transition = 'opacity 1s'
 				target.style.opacity = 0.5
 			}, 100)
+		},
+		triggerHelp() {
+			this.showHelp = !this.showHelp
 		}
 	},
 	mounted: function() {
