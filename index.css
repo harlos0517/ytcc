@@ -44,6 +44,7 @@
 #cursor {
 	top: 0;
 	bottom: 0;
+	width: .5px;
 }
 
 .timeline-sub {
@@ -53,11 +54,20 @@
 	background-color: #FFFFFF88;
 }
 
+.move-target {
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	z-index: 9;
+}
+
 .drag {
 	top: 0;
 	bottom: 0;
-	background-color: blue;
+	/* background-color: blue; */
 	cursor: ew-resize;
+	z-index: 10;
 }
 
 .drag-start {
@@ -75,4 +85,5 @@
 	right: 20%;
 	top: 10%;
 	background-color: #000000CC;
+	z-index: 20;
 }

@@ -31,7 +31,7 @@
 					<button class="btn btn-secondary m-1">Refresh</button>
 				</form>
 				<div id="info-text" class="flex-fill p-2"><span>{{ infoText }}</span></div>
-				<button class="btn btn-secondary m-1" @click="save">Save</button>
+				<button class="btn btn-secondary m-1" @click="saveSubtitles">Save</button>
 				<button class="btn btn-secondary m-1" @click="exportSRT">Export SRT</button>
 				<button class="btn btn-secondary m-1" @click="importSRT">Import SRT</button>
 				<button class="btn btn-secondary m-1" @click="triggerHelp">Help</button>
@@ -78,17 +78,30 @@
 								right: 100 - sub.endTime * 100 / videoLength + '%'
 							}"
 						>
-							<div v-if="isDragEnabled(sub)" class="drag drag-start position-absolute"></div>
-							<div v-if="isDragEnabled(sub)" class="drag drag-end position-absolute"></div>
+							<div
+								draggable="true"
+								class="position-absolute move-target"
+								@drag="moveSubtitle($event, sub)"
+								@dragstart="setDragPoint(sub)"
+							></div>
+							<div
+								draggable="true"
+								class="drag drag-start position-absolute"
+								:class="{ 'd-none': !isDragEnabled(sub) }"
+								@drag="dragSubtitle(sub, 'start')"
+							></div>
+							<div
+								draggable="true"
+								class="drag drag-end position-absolute"
+								:class="{ 'd-none': !isDragEnabled(sub) }"
+								@drag="dragSubtitle(sub, 'end')"
+							></div>
 						</div>
 					</div>
 					<div
 						id="cursor"
 						class="position-absolute bg-danger"
-						:style="{
-							left: cursor * 100 / videoLength + '%',
-							width: '.5px'
-						}"
+						:style="{ left: cursor * 100 / videoLength + '%' }"
 					>
 					</div>
 				</div>
@@ -116,7 +129,7 @@
 					class="text p-0 bg-dark text-white flex-fill me-3"
 					placeholder="Enter Subtitles Here"
 					v-model="sub.text"
-					@blur="save"
+					@blur="saveSubtitles"
 				></textarea>
 				<button
 					type="button"

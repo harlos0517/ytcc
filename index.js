@@ -16,7 +16,9 @@ let main = new Vue({
 		videoLength: 0,
 		timelineScale: 1,
 		timelineStart: 0,
+		subMinLength: 0.1,
 		mousePosition: {x: 0, y: 0},
+		mouseMovement: {x: 0, y: 0},
 		infoText: '',
 		showHelp: false
 	},
@@ -27,23 +29,17 @@ let main = new Vue({
 			if (!this.videoId || !this.videoId.length) this.videoId = 'Jt-5wQroOXA'
 			this.videoIdInput = this.videoId
 		},
-		getCookie() {
-			let cookie = document.cookie.split('; ')
-				.find(row => row.startsWith(`${this.videoId}=`))
-			if (!cookie) return
-			let value = decodeURIComponent(cookie.split('=')[1])
-			let obj = JSON.parse(value)
-			this.subtitles = obj.map(sub=>{
-				return {
-					startTime: sub.startTime,
-					endTime: sub.endTime,
-					text: sub.text,
-					active: false
-				}
-			})
-		},
 		listenPointer() {
 			listen('mousemove', e => {
+				this.mouseMovement.x = e.x - this.mousePosition.x
+				this.mouseMovement.y = e.y - this.mousePosition.y
+				this.mousePosition.x = e.x
+				this.mousePosition.y = e.y
+			}, true)
+			listen('drag', e => {
+				if (!e.x && !e.y) return
+				this.mouseMovement.x = e.x - this.mousePosition.x
+				this.mouseMovement.y = e.y - this.mousePosition.y
 				this.mousePosition.x = e.x
 				this.mousePosition.y = e.y
 			}, true)
@@ -51,7 +47,7 @@ let main = new Vue({
 		addKeyControl() {
 			this.listenKey('Enter', true, this.addSubtitle)
 			this.listenKey(' ', true, this.triggerPlay)
-			this.listenKey('s', true, this.save)
+			this.listenKey('s', true, this.saveSubtitles)
 			this.listenKey('e', true, this.exportSRT)
 			this.listenKey('i', true, this.importSRT)
 			this.listenKey('h', true, this.triggerHelp)
@@ -121,17 +117,20 @@ let main = new Vue({
 			}
 		},
 		// time display utilities
+		roundTime(time) {
+			return Math.round(time*100)/100
+		},
 		getTime() {
-			return Math.round(this.player.getCurrentTime()*100)/100
+			return this.roundTime(this.player.getCurrentTime())
 		},
 		getHour(time) {
-			return Math.round(time/3600).toString().padStart(2, '0')
+			return Math.floor(time/3600).toString().padStart(2, '0')
 		},
 		getMin(time) {
-			return Math.round(time%3600/60).toString().padStart(2, '0')
+			return Math.floor(time%3600/60).toString().padStart(2, '0')
 		},
 		getSec(time) {
-			return (Math.round(time%60*100)/100).toFixed(2).toString().padStart(5, '0')
+			return (Math.floor(time%60*100)/100).toFixed(2).toString().padStart(5, '0')
 		},
 		active(sub, time) {
 			return (time >= sub.startTime && time < sub.endTime)
@@ -202,10 +201,10 @@ let main = new Vue({
 			this.timelineScrollFix()
 		},
 		// subtitle controls
-		addSubtitle() {
-			if (![1, 2, 3].includes(this.state)) return
+		addSubtitle(sub) {
+			if (![0, 1, 2, 3].includes(this.state)) return
 			if (this.subtitles.filter(x=>x.active).length) return
-			let newSub = {
+			let newSub = sub || {
 				startTime: Math.max(0, this.cursor - 1),
 				endTime: this.cursor,
 				text: '',
@@ -216,29 +215,79 @@ let main = new Vue({
 				if (!thisSub || thisSub.endTime > newSub.endTime) {
 					let start = this.subtitles[i-1] ? this.subtitles[i-1].endTime : 0
 					newSub.startTime = Math.max(start, newSub.startTime)
-					if (newSub.endTime - newSub.startTime < 0.1) return
+					if (newSub.endTime - newSub.startTime < this.subMinLength) return
+					newSub.next = thisSub
+					newSub.prev = thisSub ? thisSub.prev : null
+					if (thisSub && thisSub.prev) thisSub.prev.next = newSub
+					if (thisSub) thisSub.prev = newSub
 					this.subtitles.splice(i, 0, newSub)
 					this.setInfoText('ADDED SUBTITLE')
-					this.save()
+					this.saveSubtitles()
 					break
 				}
 			}
 		},
 		deleteSubtitle(sub) {
+			if (sub.next) sub.next.prev = sub.prev
+			if (sub.prev) sub.prev.next = sub.next
 			let i = this.subtitles.findIndex(s => s === sub)
-			if (i < 0) return
 			this.subtitles.splice(i, 1)
 			this.setInfoText('DELETED SUBTITLE')
-			this.save()
+			this.saveSubtitles()
+		},
+		dragSubtitle(sub, pos) {
+			let min = (pos === 'start') ?
+				(sub.prev ? sub.prev.endTime : 0) :
+				(sub.startTime + this.subMinLength)
+			let max = (pos === 'start') ?
+				(sub.endTime - this.subMinLength) :
+				(sub.next ? sub.next.startTime : this.videoLength)
+			let time = this.getPointerTime()
+			time = Math.max(min, time)
+			time = Math.min(max, time)
+			time = this.roundTime(time)
+			if (pos === 'start') sub.startTime = time
+			if (pos === 'end'  ) sub.endTime   = time
+		},
+		moveSubtitle(e, sub) {
+			sub.dragPoint = sub.dragPoint || this.roundTime(this.getPointerTime())
+			let dt = this.roundTime(this.getPointerTime() - sub.dragPoint)
+			let min = (sub.prev ? sub.prev.endTime   : 0               ) - sub.startTime
+			let max = (sub.next ? sub.next.startTime : this.videoLength) - sub.endTime
+			dt = Math.max(min, dt)
+			dt = Math.min(max, dt)
+			dt = this.roundTime(dt)
+			sub.dragPoint = this.roundTime(sub.dragPoint + dt)
+			sub.startTime = this.roundTime(sub.startTime + dt)
+			sub.endTime   = this.roundTime(sub.endTime   + dt)
+		},
+		setDragPoint(sub) {
+			sub.dragPoint = this.roundTime(this.getPointerTime())
 		},
 		// saving controls
-		save() {
+		loadSubtitles() {
+			let cookie = document.cookie.split('; ')
+				.find(row => row.startsWith(`${this.videoId}=`))
+			if (!cookie) return
+			let value = decodeURIComponent(cookie.split('=')[1])
+			let obj = JSON.parse(value)
+			this.subtitles = obj.map(sub=>{
+				return {
+					startTime: sub.s,
+					endTime: sub.e,
+					text: sub.t,
+					active: false
+				}
+			})
+			this.linkSubtitles()
+		},
+		saveSubtitles() {
 			document.cookie = `${this.videoId}=${
 				encodeURIComponent(JSON.stringify(this.subtitles.map(sub=>{
 					return {
-						startTime: sub.startTime,
-						endTime: sub.endTime,
-						text: sub.text
+						s: sub.startTime,
+						e: sub.endTime,
+						t: sub.text
 					}
 				})))
 			}`
@@ -289,8 +338,15 @@ ${sub.text.split('\n').filter(x=>x.length).join('\n')}\n\n`
 					active: false
 				}
 			})
+			this.linkSubtitles()
 			ele.value = ''
 			this.setInfoText('IMPORTED')
+		},
+		linkSubtitles() {
+			this.subtitles.forEach((sub, i, subs) => {
+				sub.next = subs[i+1]
+				sub.prev = subs[i-1]
+			})
 		},
 		// other
 		setInfoText(text) {
@@ -305,11 +361,14 @@ ${sub.text.split('\n').filter(x=>x.length).join('\n')}\n\n`
 		},
 		triggerHelp() {
 			this.showHelp = !this.showHelp
+		},
+		debug(text) {
+			console.log(text)
 		}
 	},
 	mounted: function() {
 		this.fetchVideoId()
-		this.getCookie()
+		this.loadSubtitles()
 		this.listenPointer()
 		this.addKeyControl()
 		window.onYouTubeIframeAPIReady = this.startPlayer
