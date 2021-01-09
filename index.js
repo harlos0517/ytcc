@@ -18,7 +18,6 @@ let main = new Vue({
 		timelineStart: 0,
 		subMinLength: 0.1,
 		mousePosition: {x: 0, y: 0},
-		mouseMovement: {x: 0, y: 0},
 		infoText: '',
 		showHelp: false
 	},
@@ -31,15 +30,11 @@ let main = new Vue({
 		},
 		listenPointer() {
 			listen('mousemove', e => {
-				this.mouseMovement.x = e.x - this.mousePosition.x
-				this.mouseMovement.y = e.y - this.mousePosition.y
 				this.mousePosition.x = e.x
 				this.mousePosition.y = e.y
 			}, true)
 			listen('drag', e => {
 				if (!e.x && !e.y) return
-				this.mouseMovement.x = e.x - this.mousePosition.x
-				this.mouseMovement.y = e.y - this.mousePosition.y
 				this.mousePosition.x = e.x
 				this.mousePosition.y = e.y
 			}, true)
