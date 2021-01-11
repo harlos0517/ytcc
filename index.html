@@ -113,16 +113,16 @@
 				class="p-2 d-flex flex-row align-items-center"
 				:class="{'bg-secondary': sub.active}"
 			>
-				<div class="time me-3" @click="seek(sub.start)">
+				<div class="time me-3 font-monospace" @click="seek(sub.start)">
 					<div class="start-time">
-						{{ getHour(sub.start) }} :
-						{{ getMin(sub.start) }} :
-						{{ getSec(sub.start) }}
+						<span v-if="videoLength > 3600">{{ getHour(sub.start) }}:</span
+						><span>{{ getMin(sub.start) }}:</span
+						><span>{{ getSec(sub.start) }}</span>
 					</div>
 					<div class="end-time">
-						{{ getHour(sub.end) }} :
-						{{ getMin(sub.end) }} :
-						{{ getSec(sub.end) }}
+						<span v-if="videoLength > 3600">{{ getHour(sub.end) }}:</span
+						><span>{{ getMin(sub.end) }}:</span
+						><span>{{ getSec(sub.end) }}</span>
 					</div>
 				</div>
 				<textarea
