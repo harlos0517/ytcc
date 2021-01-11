@@ -8,7 +8,7 @@ let main = new Vue({
 	data: {
 		videoId: '',
 		videoIdInput: '',
-		subtitles: [],
+		subtitles: new Subtitles(),
 		player: null,
 		state: 5,
 		curSub: 0,
@@ -93,7 +93,7 @@ let main = new Vue({
 		},
 		setSubActive() {
 			// TODO : OPT ALGO
-			this.subtitles.forEach(sub=>{
+			this.subtitles.data.forEach(sub=>{
 				sub.active = this.active(sub, this.cursor)
 			})
 			// Yeah fuck the algo, brutal works la
@@ -128,7 +128,7 @@ let main = new Vue({
 			return (Math.floor(time%60*100)/100).toFixed(2).toString().padStart(5, '0')
 		},
 		active(sub, time) {
-			return (time >= sub.startTime && time < sub.endTime)
+			return (time >= sub.start && time < sub.end)
 		},
 		// timeline utilities
 		getPointerRatio() {
@@ -160,7 +160,7 @@ let main = new Vue({
 		},
 		getSubWidth(sub) {
 			let width = getRect('#timeline').width
-			let duration = sub.endTime - sub.startTime
+			let duration = sub.end - sub.start
 			return width * duration / this.getTimelineLength()
 		},
 		seek(time) {
@@ -198,63 +198,46 @@ let main = new Vue({
 		// subtitle controls
 		addSubtitle(sub) {
 			if (![0, 1, 2, 3].includes(this.state)) return
-			if (this.subtitles.filter(x=>x.active).length) return
 			let newSub = sub || {
-				startTime: Math.max(0, this.cursor - 1),
-				endTime: this.cursor,
+				start: Math.max(0, this.cursor - 1),
+				end: this.cursor,
 				text: '',
 				active: false
 			}
-			for (let i = 0;; i++) {
-				let thisSub = this.subtitles[i]
-				if (!thisSub || thisSub.endTime > newSub.endTime) {
-					let start = this.subtitles[i-1] ? this.subtitles[i-1].endTime : 0
-					newSub.startTime = Math.max(start, newSub.startTime)
-					if (newSub.endTime - newSub.startTime < this.subMinLength) return
-					newSub.next = thisSub
-					newSub.prev = thisSub ? thisSub.prev : null
-					if (thisSub && thisSub.prev) thisSub.prev.next = newSub
-					if (thisSub) thisSub.prev = newSub
-					this.subtitles.splice(i, 0, newSub)
-					this.setInfoText('ADDED SUBTITLE')
-					this.saveSubtitles()
-					break
-				}
-			}
+			this.subtitles.insert(newSub)
+			this.setInfoText('ADDED SUBTITLE')
+			this.saveSubtitles()
 		},
 		deleteSubtitle(sub) {
-			if (sub.next) sub.next.prev = sub.prev
-			if (sub.prev) sub.prev.next = sub.next
-			let i = this.subtitles.findIndex(s => s === sub)
-			this.subtitles.splice(i, 1)
+			this.subtitles.delete(sub)
 			this.setInfoText('DELETED SUBTITLE')
 			this.saveSubtitles()
 		},
 		dragSubtitle(sub, pos) {
 			let min = (pos === 'start') ?
-				(sub.prev ? sub.prev.endTime : 0) :
-				(sub.startTime + this.subMinLength)
+				(sub.prev ? sub.prev.end : 0) :
+				(sub.start + this.subMinLength)
 			let max = (pos === 'start') ?
-				(sub.endTime - this.subMinLength) :
-				(sub.next ? sub.next.startTime : this.videoLength)
+				(sub.end - this.subMinLength) :
+				(sub.next ? sub.next.start : this.videoLength)
 			let time = this.getPointerTime()
 			time = Math.max(min, time)
 			time = Math.min(max, time)
 			time = this.roundTime(time)
-			if (pos === 'start') sub.startTime = time
-			if (pos === 'end'  ) sub.endTime   = time
+			if (pos === 'start') sub.start = time
+			if (pos === 'end'  ) sub.end   = time
 		},
 		moveSubtitle(e, sub) {
 			sub.dragPoint = sub.dragPoint || this.roundTime(this.getPointerTime())
 			let dt = this.roundTime(this.getPointerTime() - sub.dragPoint)
-			let min = (sub.prev ? sub.prev.endTime   : 0               ) - sub.startTime
-			let max = (sub.next ? sub.next.startTime : this.videoLength) - sub.endTime
+			let min = (sub.prev ? sub.prev.end   : 0               ) - sub.start
+			let max = (sub.next ? sub.next.start : this.videoLength) - sub.end
 			dt = Math.max(min, dt)
 			dt = Math.min(max, dt)
 			dt = this.roundTime(dt)
 			sub.dragPoint = this.roundTime(sub.dragPoint + dt)
-			sub.startTime = this.roundTime(sub.startTime + dt)
-			sub.endTime   = this.roundTime(sub.endTime   + dt)
+			sub.start = this.roundTime(sub.start + dt)
+			sub.end   = this.roundTime(sub.end   + dt)
 		},
 		setDragPoint(sub) {
 			sub.dragPoint = this.roundTime(this.getPointerTime())
@@ -266,22 +249,14 @@ let main = new Vue({
 			if (!cookie) return
 			let value = decodeURIComponent(cookie.split('=')[1])
 			let obj = JSON.parse(value)
-			this.subtitles = obj.map(sub=>{
-				return {
-					startTime: sub.s,
-					endTime: sub.e,
-					text: sub.t,
-					active: false
-				}
-			})
-			this.linkSubtitles()
+			this.subtitles = new Subtitles(obj)
 		},
 		saveSubtitles() {
 			document.cookie = `${this.videoId}=${
-				encodeURIComponent(JSON.stringify(this.subtitles.map(sub=>{
+				encodeURIComponent(JSON.stringify(this.subtitles.data.map(sub=>{
 					return {
-						s: sub.startTime,
-						e: sub.endTime,
+						s: sub.start,
+						e: sub.end,
 						t: sub.text
 					}
 				})))
@@ -298,11 +273,11 @@ let main = new Vue({
 				let ms = that.getSec(time).slice(3, 5) + '0'
 				return `${hh}:${mm}:${ss},${ms}`
 			}
-			let srt = this.subtitles.filter(sub => 
+			let srt = this.subtitles.data.filter(sub => 
 				sub.text.replace('\n', '').length
 			).map((sub, i) =>
 				`${i+1}
-${getTimecode(sub.startTime)} --> ${getTimecode(sub.endTime)}
+${getTimecode(sub.start)} --> ${getTimecode(sub.end)}
 ${sub.text.split('\n').filter(x=>x.length).join('\n')}\n\n`
 			).join('')
 
@@ -325,23 +300,9 @@ ${sub.text.split('\n').filter(x=>x.length).join('\n')}\n\n`
 			if (!ele.files || !ele.files.length) return
 			let srt = await ele.files[0].text()
 			let subs = parseSRT(srt)
-			this.subtitles = subs.map(sub => {
-				return {
-					startTime: sub.start,
-					endTime: sub.end,
-					text: sub.text,
-					active: false
-				}
-			})
-			this.linkSubtitles()
+			this.subtitles = new Subtitles(subs)
 			ele.value = ''
 			this.setInfoText('IMPORTED')
-		},
-		linkSubtitles() {
-			this.subtitles.forEach((sub, i, subs) => {
-				sub.next = subs[i+1]
-				sub.prev = subs[i-1]
-			})
 		},
 		// other
 		setInfoText(text) {
