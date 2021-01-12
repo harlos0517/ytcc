@@ -57,6 +57,30 @@
 					</div>
 				</div>
 				<div
+					id="timeline-map"
+					class="position-relative"
+				>
+					<div
+						id="timeline-map-scroll"
+						class="position-absolute rounded"
+						:style="{
+							left: timelineStart / getTimelineLength() / timelineScale * 100 + '%',
+							width: (1 / timelineScale) * 100 + '%',
+							transition: isTimelineDragging ? 'none' : 'all 150ms'
+						}"
+					>
+						<div
+							id="timeline-map-scroll-target"
+							draggable="true"
+							class="position-absolute move-target"
+							@drag="timelineMapDrag"
+							@dragstart="timelineMapDragPoint"
+							@dragend="timelineMapDragEnd"
+						></div>
+					</div>
+				</div>
+
+				<div
 					id="timeline"
 					class="position-relative"
 					@click="timelineClick"
@@ -67,7 +91,8 @@
 						class="position-absolute"
 						:style="{
 							left: getTimelineLeft() * 100 + '%',
-							width: timelineScale * 100 + '%'
+							width: timelineScale * 100 + '%',
+							transition: isTimelineDragging ? 'none' : 'all 150ms'
 						}"
 					>
 						<div id="ruler" class="font-monospace">
@@ -173,7 +198,7 @@
 						</button>
 					</div>
 					<div id="toolbar" class="position-absolute d-flex flex-row align-items-center justify-content-center">
-						<div id="timecode" class="font-monospace h2">
+						<div id="timecode" class="font-monospace h2 m-0">
 							<span v-if="videoLength > 3600">{{ getHour(cursor) }}:</span
 							><span>{{ getMin(cursor) }}:</span
 							><span>{{ getSec(cursor) }}</span>

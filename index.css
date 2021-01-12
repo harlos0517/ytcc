@@ -42,8 +42,18 @@
 	bottom: 1rem;
 }
 
+#timeline-map {
+	height: .5rem;
+}
+
+#timeline-map-scroll {
+	top: 0;
+	bottom: 0;
+	background-color: #FFFFFF88;
+}
+
 #timeline {
-	height: 3rem;
+	height: 2.5rem;
 	overflow: hidden;
 	background-color: #333333;
 }
@@ -51,7 +61,6 @@
 #timeline-box {
 	top: 0;
 	bottom: 0;
-	transition: all 150ms;	
 }
 
 #ruler {
@@ -59,7 +68,7 @@
 }
 
 .main-ruler>span {
-	top: 0;
+	top: calc(15% + 4px);
 	left: 3px;
 	line-height: 1em;
 }

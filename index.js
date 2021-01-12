@@ -19,6 +19,7 @@ let main = new Vue({
 		subMinLength: 0.1,
 		rulers: [.1, 1, 10, 60, 600, 3600],
 		rulerThershold: 0.025,
+		isTimelineDragging: false,
 		mousePosition: {x: 0, y: 0},
 		infoText: '',
 		showHelp: false
@@ -208,6 +209,23 @@ let main = new Vue({
 		},
 		timelineClick() {
 			this.seek(this.getPointerTime())
+		},
+		timelineMapDrag() {
+			this.dragPoint = this.dragPoint || this.getPointerRatio()
+			let dr = (this.getPointerRatio() - this.dragPoint)
+			let min = 0 - this.timelineStart / this.videoLength
+			let max = 1 - (this.timelineStart + this.getTimelineLength()) / this.videoLength
+			dr = Math.max(min, dr)
+			dr = Math.min(max, dr)
+			this.dragPoint = this.dragPoint + dr
+			this.timelineStart = this.timelineStart + dr * this.videoLength
+		},
+		timelineMapDragPoint() {
+			this.dragPoint = this.getPointerRatio()
+			this.isTimelineDragging = true
+		},
+		timelineMapDragEnd() {
+			this.isTimelineDragging = false
 		},
 		timelineZoom(delta) {
 			let fixedTime = this.getPointerTime()
