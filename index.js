@@ -17,6 +17,8 @@ let main = new Vue({
 		timelineScale: 1,
 		timelineStart: 0,
 		subMinLength: 0.1,
+		rulers: [.1, 1, 10, 60, 600, 3600],
+		rulerThershold: 0.025,
 		mousePosition: {x: 0, y: 0},
 		infoText: '',
 		showHelp: false
@@ -168,6 +170,32 @@ let main = new Vue({
 		},
 		isDragEnabled(sub) {
 			return this.getSubWidth(sub) > 10
+		},
+		// timeline ruler
+		getDensity() {
+			let width = getRect('#timeline').width
+			return this.getTimelineLength() / width
+		},
+		getRuler(type) {
+			let density = this.getDensity()
+			let ruler = 5
+			for (let i = 0; i < this.rulers.length; i++) {
+				if (density <= this.rulers[i] * this.rulerThershold) {
+					ruler = i
+					break
+				}
+			}
+			return	(type === 'main') ? this.rulers[ruler] :
+							(type === 'sub' ) ? (this.rulers[ruler - 1] || 0.01) :
+							(this.rulers[ruler] / 2)
+		},
+		getRulerNum(type) {
+			return Math.ceil(this.getTimelineLength() / this.getRuler(type)) + 1
+		},
+		getRulerTime(type, x) {
+			return (
+				Math.floor(this.timelineStart / this.getRuler(type)
+			) + x - 1) * this.getRuler(type)
 		},
 		// timeline controls
 		timelineWheel(e) {

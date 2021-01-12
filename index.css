@@ -54,9 +54,37 @@
 	transition: all 150ms;	
 }
 
+#ruler {
+	font-size: 9px;
+}
+
+.main-ruler>span {
+	top: 0;
+	left: 3px;
+	line-height: 1em;
+}
+
 #cursor {
 	top: 0;
 	bottom: 0;
+	width: .5px;
+}
+
+.main-ruler {
+	top: 0;
+	bottom: 50%;
+	width: .5px;
+}
+
+.sub-ruler {
+	top: 0;
+	bottom: 85%;
+	width: .5px;
+}
+
+.sub2-ruler {
+	top: 0;
+	bottom: 75%;
 	width: .5px;
 }
 

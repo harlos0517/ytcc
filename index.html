@@ -70,6 +70,29 @@
 							width: timelineScale * 100 + '%'
 						}"
 					>
+						<div id="ruler" class="font-monospace">
+							<div
+								v-for="x in getRulerNum('main')"
+								class="main-ruler position-absolute bg-info"
+								:style="{ left: getRulerTime('main', x) * 100 / videoLength + '%' }"
+							>
+								<span class="position-absolute">
+									<span v-if="videoLength > 3600">{{ getHour(getRulerTime('main', x)) }}:</span
+									><span>{{ getMin(getRulerTime('main', x)) }}:</span
+									><br><span>{{ getSec(getRulerTime('main', x)) }}</span>
+								</span>
+							</div>
+							<div
+								v-for="x in getRulerNum('sub')"
+								class="sub-ruler position-absolute bg-info"
+								:style="{ left: getRulerTime('sub', x) * 100 / videoLength + '%' }"
+							></div>
+							<div
+								v-for="x in getRulerNum('sub2')"
+								class="sub2-ruler position-absolute bg-info"
+								:style="{ left: getRulerTime('sub2', x) * 100 / videoLength + '%' }"
+							></div>
+						</div>
 						<div id="timeline-subs">
 							<div
 								v-for="sub in subtitles.data"
