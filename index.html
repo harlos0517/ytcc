@@ -21,130 +21,137 @@
 <body class="bg-dark text-white">
 	<div
 		id="main"
-		class="w-100 vh-100 d-flex flex-row position-relative"
+		class="w-100 vh-100 d-flex flex-column position-relative"
 	>
-		<div id="video" class="d-flex flex-column">
-			<div id="top" class="p-2 d-flex flex-row align-items-center">
-				<form action="" class="pe-3">
-					<label for="video-id" class="pe-3">Video ID</label>
-					<input id="video-id" type="text" name="v" v-model="videoIdInput" />
-					<button class="btn btn-secondary m-1">Refresh</button>
-				</form>
-				<div id="info-text" class="flex-fill p-2"><span>{{ infoText }}</span></div>
-				<button class="btn btn-secondary m-1" @click="saveSubtitles">Save</button>
-				<button class="btn btn-secondary m-1" @click="exportSRT">Export SRT</button>
-				<button class="btn btn-secondary m-1" @click="importSRT">Import SRT</button>
-				<button class="btn btn-secondary m-1" @click="triggerHelp">Help</button>
-				<a id="export" class="d-none"></a>
-				<input id="import" class="d-none" type="file" @change="getSRT">
-			</div>
-			<div id="iframe" class="position-relative flex-fill">
-				<iframe
-					v-if="videoId && videoId.length"
-					width="100%"
-					height="100%"
-					:src="`https://www.youtube.com/embed/${videoId}?enablejsapi=1&disablekb=1&fs=0&modestbranding=1&mute=1`"
-					frameborder="0"
-				></iframe>
-				<!-- <div id="iframe-cover" class="position-absolute"></div> -->
-				<div id="subs" class="w-100 position-absolute text-center h3">
+		<div id="top" class="p-2 d-flex flex-row align-items-center">
+			<form action="" class="pe-3">
+				<label for="video-id" class="pe-3">Video ID</label>
+				<input id="video-id" type="text" name="v" v-model="videoIdInput" />
+				<button class="btn btn-secondary m-1">Refresh</button>
+			</form>
+			<div class="flex-fill"></div>
+			<button class="btn btn-secondary m-1" @click="saveSubtitles">Save</button>
+			<button class="btn btn-secondary m-1" @click="exportSRT">Export SRT</button>
+			<button class="btn btn-secondary m-1" @click="importSRT">Import SRT</button>
+			<button class="btn btn-secondary m-1" @click="triggerHelp">Help</button>
+			<a id="export" class="d-none"></a>
+			<input id="import" class="d-none" type="file" @change="getSRT">
+		</div>
+		<div id="mid" class="flex-fill d-flex flex-row position-relative align-items-stretch">
+			<div id="video" class="d-flex flex-column">
+				<div id="iframe" class="position-relative flex-fill">
+					<iframe
+						v-if="videoId && videoId.length"
+						width="100%"
+						height="100%"
+						:src="`https://www.youtube.com/embed/${videoId}?enablejsapi=1&disablekb=1&fs=0&modestbranding=1&mute=1`"
+						frameborder="0"
+					></iframe>
+					<!-- <div id="iframe-cover" class="position-absolute"></div> -->
+					<div id="subs" class="w-100 position-absolute text-center h3">
+						<div
+							v-for="sub in subtitles.data.filter(x=>x.active).reverse()"
+						>
+							{{ sub.text }}
+						</div>
+					</div>
+				</div>
+				<div
+					id="timeline"
+					class="position-relative"
+					@click="timelineClick"
+					@wheel="timelineWheel"
+				>
 					<div
-						v-for="sub in subtitles.data.filter(x=>x.active).reverse()"
+						id="timeline-box"
+						class="position-absolute"
+						:style="{
+							left: getTimelineLeft() * 100 + '%',
+							width: timelineScale * 100 + '%'
+						}"
 					>
-						{{ sub.text }}
+						<div id="timeline-subs">
+							<div
+								v-for="sub in subtitles.data"
+								class="position-absolute timeline-sub rounded"
+								:style="{
+									left: sub.start * 100 / videoLength + '%',
+									right: 100 - sub.end * 100 / videoLength + '%'
+								}"
+							>
+								<div
+									draggable="true"
+									class="position-absolute move-target"
+									@drag="moveSubtitle($event, sub)"
+									@dragstart="setDragPoint(sub)"
+								></div>
+								<div
+									draggable="true"
+									class="drag drag-start position-absolute"
+									:class="{ 'd-none': !isDragEnabled(sub) }"
+									@drag="dragSubtitle(sub, 'start')"
+								></div>
+								<div
+									draggable="true"
+									class="drag drag-end position-absolute"
+									:class="{ 'd-none': !isDragEnabled(sub) }"
+									@drag="dragSubtitle(sub, 'end')"
+								></div>
+							</div>
+						</div>
+						<div
+							id="cursor"
+							class="position-absolute bg-danger"
+							:style="{ left: cursor * 100 / videoLength + '%' }"
+						>
+						</div>
 					</div>
 				</div>
 			</div>
-			<div
-				id="timeline"
-				class="position-relative"
-				@click="timelineClick"
-				@wheel="timelineWheel"
-			>
-				<div
-					id="timeline-box"
-					class="position-absolute"
-					:style="{
-						left: getTimelineLeft() * 100 + '%',
-						width: timelineScale * 100 + '%'
-					}"
-				>
-					<div id="timeline-subs">
-						<div
-							v-for="sub in subtitles.data"
-							class="position-absolute timeline-sub"
-							:style="{
-								left: sub.start * 100 / videoLength + '%',
-								right: 100 - sub.end * 100 / videoLength + '%'
-							}"
-						>
-							<div
-								draggable="true"
-								class="position-absolute move-target"
-								@drag="moveSubtitle($event, sub)"
-								@dragstart="setDragPoint(sub)"
-							></div>
-							<div
-								draggable="true"
-								class="drag drag-start position-absolute"
-								:class="{ 'd-none': !isDragEnabled(sub) }"
-								@drag="dragSubtitle(sub, 'start')"
-							></div>
-							<div
-								draggable="true"
-								class="drag drag-end position-absolute"
-								:class="{ 'd-none': !isDragEnabled(sub) }"
-								@drag="dragSubtitle(sub, 'end')"
-							></div>
-						</div>
-					</div>
+			<div id="cc" class="position-relative">
+				<div class="px-2 wrap position-absolute">
 					<div
-						id="cursor"
-						class="position-absolute bg-danger"
-						:style="{ left: cursor * 100 / videoLength + '%' }"
+						v-for="sub in subtitles.data"
+						class="p-2 d-flex flex-row align-items-center rounded"
+						:class="{'bg-secondary': sub.active}"
 					>
+						<div class="time me-3 font-monospace" @click="seek(sub.start)">
+							<div class="start-time">
+								<span v-if="videoLength > 3600">{{ getHour(sub.start) }}:</span
+								><span>{{ getMin(sub.start) }}:</span
+								><span>{{ getSec(sub.start) }}</span>
+							</div>
+							<div class="end-time">
+								<span v-if="videoLength > 3600">{{ getHour(sub.end) }}:</span
+								><span>{{ getMin(sub.end) }}:</span
+								><span>{{ getSec(sub.end) }}</span>
+							</div>
+						</div>
+						<textarea
+							class="text p-0 bg-dark text-white flex-fill me-3"
+							placeholder="Enter Subtitles Here"
+							v-model="sub.text"
+							@blur="saveSubtitles"
+						></textarea>
+						<button
+							type="button"
+							class="btn-close close btn-close-white"
+							aria-label="Close"
+							@click="deleteSubtitle(sub)"
+						></button>
 					</div>
+					<button
+						type="button"
+						class="btn btn-dark w-100 text-center p-3"
+						@click="addSubtitle()"
+					>
+						+
+					</button>
 				</div>
 			</div>
 		</div>
-		<div id="cc" class="p-2">
-			<div
-				v-for="sub in subtitles.data"
-				class="p-2 d-flex flex-row align-items-center"
-				:class="{'bg-secondary': sub.active}"
-			>
-				<div class="time me-3 font-monospace" @click="seek(sub.start)">
-					<div class="start-time">
-						<span v-if="videoLength > 3600">{{ getHour(sub.start) }}:</span
-						><span>{{ getMin(sub.start) }}:</span
-						><span>{{ getSec(sub.start) }}</span>
-					</div>
-					<div class="end-time">
-						<span v-if="videoLength > 3600">{{ getHour(sub.end) }}:</span
-						><span>{{ getMin(sub.end) }}:</span
-						><span>{{ getSec(sub.end) }}</span>
-					</div>
-				</div>
-				<textarea
-					class="text p-0 bg-dark text-white flex-fill me-3"
-					placeholder="Enter Subtitles Here"
-					v-model="sub.text"
-					@blur="saveSubtitles"
-				></textarea>
-				<button
-					type="button"
-					class="btn-close close btn-close-white"
-					aria-label="Close"
-					@click="deleteSubtitle(sub)"
-				></button>
-			</div>
-			<button
-				type="button"
-				class="btn btn-dark w-100 text-center p-3"
-				@click="addSubtitle()"
-			>
-				+
-			</button>
+		<div id="bot" class="d-flex flex-row align-items-center">
+			<div id="info-text" class="px-2"><span>{{ infoText }}</span></div>
 		</div>
 		<div v-if="showHelp" id="help" class="position-absolute p-5" @click="triggerHelp">
 			<span>- Ctrl + Space : Play / Pause</span><br>
