@@ -132,18 +132,21 @@
 									class="position-absolute move-target"
 									@drag="moveSubtitle($event, sub)"
 									@dragstart="setDragPoint(sub)"
+									@dragend="saveSubtitles"
 								></div>
 								<div
 									draggable="true"
 									class="drag drag-start position-absolute"
 									:class="{ 'd-none': !isDragEnabled(sub) }"
 									@drag="dragSubtitle(sub, 'start')"
+									@dragend="saveSubtitles"
 								></div>
 								<div
 									draggable="true"
 									class="drag drag-end position-absolute"
 									:class="{ 'd-none': !isDragEnabled(sub) }"
 									@drag="dragSubtitle(sub, 'end')"
+									@dragend="saveSubtitles"
 								></div>
 							</div>
 						</div>
