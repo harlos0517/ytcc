@@ -22,7 +22,7 @@ let main = new Vue({
 		isTimelineDragging: false,
 		mousePosition: {x: 0, y: 0},
 		infoText: '',
-		showHelp: false
+		showHelp: true
 	},
 	methods: {
 		// startup

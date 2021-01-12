@@ -79,7 +79,6 @@
 						></div>
 					</div>
 				</div>
-
 				<div
 					id="timeline"
 					class="position-relative"
@@ -213,15 +212,62 @@
 		<div id="bot" class="d-flex flex-row align-items-center">
 			<div id="info-text" class="px-2"><span>{{ infoText }}</span></div>
 		</div>
-		<div v-if="showHelp" id="help" class="position-absolute p-5" @click="triggerHelp">
-			<span>- Ctrl + Space : Play / Pause</span><br>
-			<span>- Ctrl + Enter : Add subtitles</span><br>
-			<span>- Ctrl + S : Save (to Cookie)</span><br>
-			<span>- Ctrl + E : Export SRT</span><br>
-			<span>- Ctrl + I : Import SRT</span><br>
-			<span>- Ctrl + H : Help</span><br>
-			<span>- (Timeline) mousewheel : Scroll</span><br>
-			<span>- (Timeline) Ctrl + mousewheel : Zoom</span><br>
+		<div v-if="showHelp" id="help" class="position-absolute rounded">
+			<div class="wrap p-5">
+				<h3><b>Y</b>ou<b>T</b>ube Video <b>C</b>losed <b>C</b>aption Tool</h3>
+				<p>
+					YTCC allows users to create subtitles for any video on YouTube.
+					This project ultimately aims for letting audience from all over the world understand streams from vTubers,
+					and allows clippers to make clips easier and faster.
+				</p>
+				<h4>[ WARNING ]</h4>
+				<p>
+					This webpage is still in testing state and may be unstable.
+					The subtitles you created are not guaranteed to be well preserved.
+					Currently, YTCC uses cookie to auto save.
+					Remember to Export SRT once in a while to ensure you don't lose your subtitles.
+				</p>
+				<h4>[ Keyboard Shortcuts ]</h4>
+				<span>These only work when focus is outside the video player.</span>
+				<ul>
+					<li>Ctrl + Space : Play / Pause</li>
+					<li>Ctrl + Enter : Add subtitles</li>
+					<li>Ctrl + S : Save (to Cookie)</li>
+					<li>Ctrl + E : Export SRT</li>
+					<li>Ctrl + I : Import SRT</li>
+					<li>Ctrl + H : Help</li>
+					<li>(Timeline) mousewheel : Scroll</li>
+					<li>(Timeline) Ctrl + mousewheel : Zoom</li>
+					<li>(Timeline) drag : Move Subtitle</li>
+				</ul>
+				<h4>[ Planning Features ]</h4>
+				<ul>
+					<li>Multi track subtitles</li>
+					<li>Audio Render from backend & auto CC time generate</li>
+					<li>CC font color, style, position</li>
+					<li>save CC to backend, used for collab/translation (which should come with a user system)</li>
+				</ul>
+				<h4>[ About ]</h4>
+				<p>
+					This webpage is created and designed by <a href="https://hackmd.io/@DeemoHarlos/share">Deemo Harlos</a>.<br>
+					Github Repo: <a href="https://github.io/DeemoHarlos/ytcc">https://github.io/DeemoHarlos/ytcc</a> |
+					<a href="https://github.com/DeemoHarlos/ytcc/issues/new">Report Bugs or Issues</a><br>
+					Buy me a coffee! Thanks for your support! <a href="https://ko-fi.com/harlosmusic">Ko-fi</a> |
+					<a href="https://www.patreon.com/HarlosMusic">Patreon</a><br>
+					Contact me:
+					<a href="https://twitter.com/HarlosMusic">Twitter</a> |
+					<a href="https://discord.gg/6r4bvhr">Discord</a> |
+					<a href="https://www.facebook.com/HarlosMusic">Facebook</a> |
+					<a href="https://www.instagram.com/harlosmusic">Instagram</a>
+				</p>
+			</div>
+			<button
+				type="button"
+				id="help-close"
+				class="btn-close close btn-close-white position-absolute"
+				aria-label="Close"
+				@click="triggerHelp"
+			></button>
 		</div>
 	</div>
 	<script src="parse-srt.js" type="text/javascript"></script>
