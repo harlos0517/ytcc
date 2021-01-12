@@ -108,45 +108,54 @@
 					</div>
 				</div>
 			</div>
-			<div id="cc" class="position-relative">
-				<div class="px-2 wrap position-absolute">
-					<div
-						v-for="sub in subtitles.data"
-						class="p-2 d-flex flex-row align-items-center rounded"
-						:class="{'bg-secondary': sub.active}"
-					>
-						<div class="time me-3 font-monospace" @click="seek(sub.start)">
-							<div class="start-time">
-								<span v-if="videoLength > 3600">{{ getHour(sub.start) }}:</span
-								><span>{{ getMin(sub.start) }}:</span
-								><span>{{ getSec(sub.start) }}</span>
+			<div id="cc" class="position-relative d-flex flex-column">
+				<div class="flex-fill">
+					<div class="px-2 wrap position-absolute">
+						<div
+							v-for="sub in subtitles.data"
+							class="p-2 d-flex flex-row align-items-center rounded"
+							:class="{'bg-secondary': sub.active}"
+						>
+							<div class="time me-3 font-monospace" @click="seek(sub.start)">
+								<div class="start-time">
+									<span v-if="videoLength > 3600">{{ getHour(sub.start) }}:</span
+									><span>{{ getMin(sub.start) }}:</span
+									><span>{{ getSec(sub.start) }}</span>
+								</div>
+								<div class="end-time">
+									<span v-if="videoLength > 3600">{{ getHour(sub.end) }}:</span
+									><span>{{ getMin(sub.end) }}:</span
+									><span>{{ getSec(sub.end) }}</span>
+								</div>
 							</div>
-							<div class="end-time">
-								<span v-if="videoLength > 3600">{{ getHour(sub.end) }}:</span
-								><span>{{ getMin(sub.end) }}:</span
-								><span>{{ getSec(sub.end) }}</span>
-							</div>
+							<textarea
+								class="text p-0 bg-dark text-white flex-fill me-3"
+								placeholder="Enter Subtitles Here"
+								v-model="sub.text"
+								@blur="saveSubtitles"
+							></textarea>
+							<button
+								type="button"
+								class="btn-close close btn-close-white"
+								aria-label="Close"
+								@click="deleteSubtitle(sub)"
+							></button>
 						</div>
-						<textarea
-							class="text p-0 bg-dark text-white flex-fill me-3"
-							placeholder="Enter Subtitles Here"
-							v-model="sub.text"
-							@blur="saveSubtitles"
-						></textarea>
 						<button
 							type="button"
-							class="btn-close close btn-close-white"
-							aria-label="Close"
-							@click="deleteSubtitle(sub)"
-						></button>
+							class="btn btn-dark w-100 text-center p-3"
+							@click="addSubtitle()"
+						>
+							+
+						</button>
 					</div>
-					<button
-						type="button"
-						class="btn btn-dark w-100 text-center p-3"
-						@click="addSubtitle()"
-					>
-						+
-					</button>
+					<div id="toolbar" class="position-absolute d-flex flex-row align-items-center justify-content-center">
+						<div id="timecode" class="font-monospace h2">
+							<span v-if="videoLength > 3600">{{ getHour(cursor) }}:</span
+							><span>{{ getMin(cursor) }}:</span
+							><span>{{ getSec(cursor) }}</span>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
