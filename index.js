@@ -9,6 +9,7 @@ let main = new Vue({
 		videoId: '',
 		videoIdInput: '',
 		subtitles: new Subtitles(),
+		tracks: [],
 		player: null,
 		state: 5,
 		curSub: 0,

@@ -55,7 +55,7 @@
 						:src="`https://www.youtube.com/embed/${videoId}?enablejsapi=1&disablekb=1&fs=0&modestbranding=1&mute=1`"
 						frameborder="0"
 					></iframe>
-					<!-- <div id="iframe-cover" class="position-absolute"></div> -->
+					<!-- <div id="iframe-cover" class="position-absolute w-100 h-100"></div> -->
 					<div id="subs" class="w-100 position-absolute text-center h3">
 						<div
 							v-for="sub in subtitles.data.filter(x=>x.active).reverse()"
@@ -70,7 +70,7 @@
 				>
 					<div
 						id="timeline-map-scroll"
-						class="position-absolute rounded"
+						class="position-absolute rounded h-100"
 						:style="{
 							left: timelineStart / getTimelineLength() / timelineScale * 100 + '%',
 							width: (1 / timelineScale) * 100 + '%',
@@ -80,7 +80,7 @@
 						<div
 							id="timeline-map-scroll-target"
 							draggable="true"
-							class="position-absolute move-target"
+							class="position-absolute move-target w-100 h-100"
 							@drag="timelineMapDrag"
 							@dragstart="timelineMapDragPoint"
 							@dragend="timelineMapDragEnd"
@@ -95,7 +95,7 @@
 				>
 					<div
 						id="timeline-box"
-						class="position-absolute"
+						class="position-absolute h-100"
 						:style="{
 							left: getTimelineLeft() * 100 + '%',
 							width: timelineScale * 100 + '%',
@@ -128,7 +128,7 @@
 						<div id="timeline-subs">
 							<div
 								v-for="sub in subtitles.data"
-								class="position-absolute timeline-sub rounded"
+								class="position-absolute timeline-sub rounded h-100"
 								:style="{
 									left: sub.start * 100 / videoLength + '%',
 									right: 100 - sub.end * 100 / videoLength + '%'
@@ -136,21 +136,21 @@
 							>
 								<div
 									draggable="true"
-									class="position-absolute move-target"
+									class="position-absolute move-target h-100 w-100"
 									@drag="moveSubtitle($event, sub)"
 									@dragstart="setDragPoint(sub)"
 									@dragend="saveSubtitles"
 								></div>
 								<div
 									draggable="true"
-									class="drag drag-start position-absolute"
+									class="drag drag-start position-absolute h-100"
 									:class="{ 'd-none': !isDragEnabled(sub) }"
 									@drag="dragSubtitle(sub, 'start')"
 									@dragend="saveSubtitles"
 								></div>
 								<div
 									draggable="true"
-									class="drag drag-end position-absolute"
+									class="drag drag-end position-absolute h-100"
 									:class="{ 'd-none': !isDragEnabled(sub) }"
 									@drag="dragSubtitle(sub, 'end')"
 									@dragend="saveSubtitles"
@@ -159,16 +159,16 @@
 						</div>
 						<div
 							id="cursor"
-							class="position-absolute bg-danger"
+							class="position-absolute bg-danger h-100"
 							:style="{ left: cursor * 100 / videoLength + '%' }"
 						>
 						</div>
 					</div>
 				</div>
 			</div>
-			<div id="cc" class="position-relative d-flex flex-column">
-				<div class="flex-fill">
-					<div class="px-2 wrap position-absolute">
+			<div id="cc" class="d-flex flex-column">
+				<div id="subs" class="flex-fill position-relative">
+					<div class="px-2 wrap position-absolute w-100">
 						<div
 							v-for="sub in subtitles.data"
 							class="p-2 d-flex flex-row align-items-center rounded"
@@ -207,12 +207,12 @@
 							+
 						</button>
 					</div>
-					<div id="toolbar" class="position-absolute d-flex flex-row align-items-center justify-content-center">
-						<div id="timecode" class="font-monospace h2 m-0">
-							<span v-if="videoLength > 3600">{{ getHour(cursor) }}:</span
-							><span>{{ getMin(cursor) }}:</span
-							><span>{{ getSec(cursor) }}</span>
-						</div>
+				</div>
+				<div id="toolbar" class="d-flex flex-row align-items-center justify-content-center">
+					<div id="timecode" class="font-monospace h2 m-0">
+						<span v-if="videoLength > 3600">{{ getHour(cursor) }}:</span
+						><span>{{ getMin(cursor) }}:</span
+						><span>{{ getSec(cursor) }}</span>
 					</div>
 				</div>
 			</div>
