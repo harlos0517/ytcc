@@ -10,6 +10,7 @@ let main = new Vue({
 		videoIdInput: '',
 		subtitles: new Subtitles(),
 		tracks: [],
+		curTrack: 0,
 		player: null,
 		state: 5,
 		curSub: 0,
@@ -97,9 +98,9 @@ let main = new Vue({
 		},
 		setSubActive() {
 			// TODO : OPT ALGO
-			this.subtitles.data.forEach(sub=>{
+			this.tracks.forEach(t => t.data.forEach(sub=>{
 				sub.active = this.active(sub, this.cursor)
-			})
+			}))
 			// Yeah fuck the algo, brutal works la
 		},
 		autoScroll() {
@@ -243,6 +244,14 @@ let main = new Vue({
 			this.timelineScrollFix()
 		},
 		// subtitle controls
+		newTrack() {
+			this.tracks.push(new Subtitles())
+			this.curTrack = this.tracks.length - 1
+		},
+		deleteTrack(i) {
+			this.tracks.splice(i, 1)
+			this.curTrack = Math.min(this.curTrack, this.tracks.length - 1)
+		},
 		addSubtitle(sub) {
 			if (![0, 1, 2, 3].includes(this.state)) return
 			let newSub = sub || {
@@ -251,12 +260,12 @@ let main = new Vue({
 				text: '',
 				active: false
 			}
-			this.subtitles.insert(newSub)
+			this.tracks[this.curTrack].insert(newSub)
 			this.setInfoText('ADDED SUBTITLE')
 			this.saveSubtitles()
 		},
 		deleteSubtitle(sub) {
-			this.subtitles.delete(sub)
+			this.tracks[this.curTrack].delete(sub)
 			this.setInfoText('DELETED SUBTITLE')
 			this.saveSubtitles()
 		},
@@ -296,17 +305,21 @@ let main = new Vue({
 			if (!cookie) return
 			let value = decodeURIComponent(cookie.split('=')[1])
 			let obj = JSON.parse(value)
-			this.subtitles = new Subtitles(obj)
+			if (Array.isArray(obj[0]))
+				this.tracks = obj.map(t => new Subtitles(t))
+			else this.tracks = [new Subtitles(obj)]
 		},
 		saveSubtitles() {
 			document.cookie = `${this.videoId}=${
-				encodeURIComponent(JSON.stringify(this.subtitles.data.map(sub=>{
-					return {
-						s: sub.start,
-						e: sub.end,
-						t: sub.text
-					}
-				})))
+				encodeURIComponent(JSON.stringify(
+					this.tracks.map(t => t.data.map(sub=>{
+						return {
+							s: sub.start,
+							e: sub.end,
+							t: sub.text
+						}
+					}))
+				))
 			}`
 			this.setInfoText('SAVED')
 		},
@@ -320,7 +333,7 @@ let main = new Vue({
 				let ms = that.getSec(time).slice(3, 5) + '0'
 				return `${hh}:${mm}:${ss},${ms}`
 			}
-			let srt = this.subtitles.data.filter(sub => 
+			let srt = this.tracks[0].data.filter(sub => 
 				sub.text.replace('\n', '').length
 			).map((sub, i) =>
 				`${i+1}
@@ -347,7 +360,8 @@ ${sub.text.split('\n').filter(x=>x.length).join('\n')}\n\n`
 			if (!ele.files || !ele.files.length) return
 			let srt = await ele.files[0].text()
 			let subs = parseSRT(srt)
-			this.subtitles = new Subtitles(subs)
+			this.newTrack()
+			this.tracks[this.curTrack] = new Subtitles(subs)
 			ele.value = ''
 			this.setInfoText('IMPORTED')
 		},

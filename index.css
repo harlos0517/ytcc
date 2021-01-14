@@ -12,6 +12,10 @@ a {
 	flex: 7 0 0;
 }
 
+#video-subs {
+	bottom: 0;
+}
+
 #cc {
 	flex: 3 0 0;
 }
@@ -26,13 +30,17 @@ a {
 }
 
 #timeline {
-	height: 2.5rem;
 	overflow: hidden;
 	background-color: #333333;
 }
 
+.timeline-track {
+	height: 2.5rem;
+}
+
 #cursor {
 	width: .5px;
+	top: 0;
 }
 
 /* timeline ruler */
@@ -41,26 +49,26 @@ a {
 }
 
 .main-ruler>span {
-	top: calc(15% + 4px);
-	left: 3px;
+	top: .75rem;
+	left: .3rem;
 	line-height: 1em;
 }
 
 .main-ruler {
 	top: 0;
-	bottom: 50%;
+	height: 2.25rem;
 	width: .5px;
 }
 
 .sub-ruler {
 	top: 0;
-	bottom: 85%;
+	height: .5rem;
 	width: .5px;
 }
 
 .sub2-ruler {
 	top: 0;
-	bottom: 75%;
+	height: 1rem;
 	width: .5px;
 }
 

@@ -56,11 +56,11 @@
 						frameborder="0"
 					></iframe>
 					<!-- <div id="iframe-cover" class="position-absolute w-100 h-100"></div> -->
-					<div id="subs" class="w-100 position-absolute text-center h3">
-						<div
-							v-for="sub in subtitles.data.filter(x=>x.active).reverse()"
-						>
-							{{ sub.text }}
+					<div id="video-subs" class="w-100 position-absolute text-center h3">
+						<div v-for="t in tracks">
+							<div v-for="sub in t.data.filter(x=>x.active).reverse()">
+								{{ sub.text }}
+							</div>
 						</div>
 					</div>
 				</div>
@@ -90,12 +90,14 @@
 				<div
 					id="timeline"
 					class="position-relative"
+					:style="{
+					}"
 					@click="timelineClick"
 					@wheel="timelineWheel"
 				>
 					<div
 						id="timeline-box"
-						class="position-absolute h-100"
+						class="position-relative h-100"
 						:style="{
 							left: getTimelineLeft() * 100 + '%',
 							width: timelineScale * 100 + '%',
@@ -125,36 +127,46 @@
 								:style="{ left: getRulerTime('sub2', x) * 100 / videoLength + '%' }"
 							></div>
 						</div>
-						<div id="timeline-subs">
+						<div id="timeline-subs" class="">
 							<div
-								v-for="sub in subtitles.data"
-								class="position-absolute timeline-sub rounded h-100"
+								v-for="(t, i) in tracks"
+								class="timeline-track w-100 position-relative"
 								:style="{
-									left: sub.start * 100 / videoLength + '%',
-									right: 100 - sub.end * 100 / videoLength + '%'
+									opacity: i === curTrack ? 1 : .5,
+									'background-color': i === curTrack ? '#FFFFFF22' : '#00000000',
 								}"
+								@click="curTrack = i"
 							>
 								<div
-									draggable="true"
-									class="position-absolute move-target h-100 w-100"
-									@drag="moveSubtitle($event, sub)"
-									@dragstart="setDragPoint(sub)"
-									@dragend="saveSubtitles"
-								></div>
-								<div
-									draggable="true"
-									class="drag drag-start position-absolute h-100"
-									:class="{ 'd-none': !isDragEnabled(sub) }"
-									@drag="dragSubtitle(sub, 'start')"
-									@dragend="saveSubtitles"
-								></div>
-								<div
-									draggable="true"
-									class="drag drag-end position-absolute h-100"
-									:class="{ 'd-none': !isDragEnabled(sub) }"
-									@drag="dragSubtitle(sub, 'end')"
-									@dragend="saveSubtitles"
-								></div>
+									v-for="sub in t.data"
+									class="position-absolute timeline-sub rounded h-100"
+									:style="{
+										left: sub.start * 100 / videoLength + '%',
+										right: 100 - sub.end * 100 / videoLength + '%'
+									}"
+								>
+									<div
+										draggable="true"
+										class="position-absolute move-target h-100 w-100"
+										@drag="moveSubtitle($event, sub)"
+										@dragstart="setDragPoint(sub)"
+										@dragend="saveSubtitles"
+									></div>
+									<div
+										draggable="true"
+										class="drag drag-start position-absolute h-100"
+										:class="{ 'd-none': !isDragEnabled(sub) }"
+										@drag="dragSubtitle(sub, 'start')"
+										@dragend="saveSubtitles"
+									></div>
+									<div
+										draggable="true"
+										class="drag drag-end position-absolute h-100"
+										:class="{ 'd-none': !isDragEnabled(sub) }"
+										@drag="dragSubtitle(sub, 'end')"
+										@dragend="saveSubtitles"
+									></div>
+								</div>
 							</div>
 						</div>
 						<div
@@ -167,10 +179,37 @@
 				</div>
 			</div>
 			<div id="cc" class="d-flex flex-column">
+				<div id="tracks">
+					<ul class="nav nav-tabs">
+						<li v-for="(t, i) in tracks" class="nav-item">
+							<a
+								class="nav-link btn"
+								:class="{ active: i === curTrack}"
+							>
+								<span @click="curTrack = i">{{ i }}</span>
+								<button
+									type="button"
+									aria-label="Close"
+									class="btn-close close btn-close-white"
+									@click="deleteTrack(i)"
+								></button>
+							</a>
+						</li>
+						<li class="nav-item">
+							<a
+								class="nav-link"
+								aria-current="page"
+								@click="newTrack"
+							>
+								+
+							</a>
+						</li>
+					</ul>
+				</div>
 				<div id="subs" class="flex-fill position-relative">
 					<div class="px-2 wrap position-absolute w-100">
 						<div
-							v-for="sub in subtitles.data"
+							v-for="sub in (tracks[curTrack] ? tracks[curTrack].data : [])"
 							class="p-2 d-flex flex-row align-items-center rounded"
 							:class="{'bg-secondary': sub.active}"
 						>
