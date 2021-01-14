@@ -2,6 +2,15 @@
 const getEle = sel => document.querySelector(sel)
 const getRect = sel => getEle(sel).getBoundingClientRect()
 const listen = window.addEventListener
+function getCookie(key) {
+	let cookie = document.cookie.split('; ')
+		.find(row => row.startsWith(`${key}=`))
+	if (!cookie) return ''
+	return cookie.split('=')[1]
+}
+function setCookie(key, value) {
+	document.cookie = `${key}=${value}`
+}
 
 let main = new Vue({
 	el: '#main',
@@ -24,7 +33,8 @@ let main = new Vue({
 		isTimelineDragging: false,
 		mousePosition: {x: 0, y: 0},
 		infoText: '',
-		showHelp: true
+		showHelp: false,
+		curVersion: '1.0.0'
 	},
 	methods: {
 		// startup
@@ -84,6 +94,12 @@ let main = new Vue({
 				}
 			})
 			window.requestAnimationFrame(this.update)
+		},
+		checkVersion() {
+			if (getCookie('version') !== this.curVersion) {
+				this.showHelp = true
+				setCookie('version', this.curVersion)
+			}
 		},
 		// update routine
 		update() {
@@ -300,27 +316,24 @@ let main = new Vue({
 		},
 		// saving controls
 		loadSubtitles() {
-			let cookie = document.cookie.split('; ')
-				.find(row => row.startsWith(`${this.videoId}=`))
-			if (!cookie) return
-			let value = decodeURIComponent(cookie.split('=')[1])
-			let obj = JSON.parse(value)
+			let value = decodeURIComponent(getCookie(this.videoId))
+			let obj = JSON.parse(value) || []
 			if (Array.isArray(obj[0]))
 				this.tracks = obj.map(t => new Subtitles(t))
 			else this.tracks = [new Subtitles(obj)]
 		},
 		saveSubtitles() {
-			document.cookie = `${this.videoId}=${
-				encodeURIComponent(JSON.stringify(
+			setCookie(this.videoId, encodeURIComponent(
+				JSON.stringify(
 					this.tracks.map(t => t.data.map(sub=>{
 						return {
 							s: sub.start,
 							e: sub.end,
 							t: sub.text
 						}
-					}))
+					})
 				))
-			}`
+			))
 			this.setInfoText('SAVED')
 		},
 		exportSRT() {
@@ -384,6 +397,7 @@ ${sub.text.split('\n').filter(x=>x.length).join('\n')}\n\n`
 		}
 	},
 	mounted: function() {
+		this.checkVersion()
 		this.fetchVideoId()
 		this.loadSubtitles()
 		this.listenPointer()
