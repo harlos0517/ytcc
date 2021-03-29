@@ -25,7 +25,8 @@
     "babel-eslint": "^10.0.1",
     "eslint": "^7.21.0",
     "eslint-config-prettier": "^8.1.0",
-    "eslint-plugin-vue": "^7.7.0"
+    "eslint-plugin-vue": "^7.7.0",
+    "vue-youtube": "^1.4.0"
   },
   "browserslist": [
     "ie >= 11",
