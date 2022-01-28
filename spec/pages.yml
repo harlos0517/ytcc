@@ -1,0 +1,7 @@
+- /index # Description about YTCC
+
+- /video/:video_id # video edit page
+
+- /me # my author page
+
+- /author/:author_id # other author page
