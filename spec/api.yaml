@@ -1,0 +1,63 @@
+# Database Schema
+- Video
+  - type: string
+  - handle: string
+  - url: string
+  - length: number # in seconds
+
+- Track
+  - video_id: Video._id
+  - video_type: string
+  - default_style: Style | null
+
+- Info
+  - video_id: Video._id
+  - track_id: Track._id
+  - author_id: Author._id
+  - text: string
+  - start_time: number # in seconds
+  - end_time: number | null # in seconds
+  - style: Style | null
+
+- Author
+  - email: string
+  - password_hash: string
+
+# Types
+- Style
+  - size: numebr # px
+  - position:
+    - horizontal: number # in percentage
+    - vertical: number # in percentage
+  - align:
+    - horizontal: number # in percentage
+    - vertical: number # in percentage
+  - color: string # #00000000
+  - background_color: string # #00000000
+
+# API
+- /video
+  - GET /video?video_type={video_type}&handle={handle}
+  - GET /video/:video_id
+  - GET /video/:video_id/tracks
+  - POST /video
+  - PUT /video/:video_id
+
+- /track
+  - GET /track/:track_id
+  - GET /track/:track_id/infos
+  - POST /track/
+  - PUT /track/:track_id
+
+- /info
+  - GET /info/:info_id
+  - POST /info/
+  - PUT /info/:info_id
+
+- /author
+  - GET /author/me
+  - GET /author/:author_id
+  - POST /author/ # create account
+  - GET /author/verify?code={code} # verify e-mail
+  - PUT /author/password # change password
+  - PUT /author/:author_id # change password
