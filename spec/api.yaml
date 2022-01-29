@@ -55,9 +55,10 @@
   - PUT /info/:info_id
 
 - /user
+  - POST /login # login
+  - POST /register # create account
   - GET /user/me
   - GET /user/:user_id
-  - POST /user/ # create account
   - GET /user/verify?code={code} # verify e-mail
   - PUT /user/password # change password
   - PUT /user/:user_id # change password

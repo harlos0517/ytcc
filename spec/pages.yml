@@ -5,3 +5,9 @@
 - /me # my author page
 
 - /author/:author_id # other author page
+
+- /register
+
+- /login
+
+- /verify?code=code
