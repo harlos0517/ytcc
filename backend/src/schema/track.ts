@@ -5,8 +5,8 @@ import { InfoStyle, InfoStyleSchema } from './sub-schema/style'
 import { schemaRequireAll } from '@/util/schema'
 
 export type Track = {
-  video_id: string,
-  video_type: string,
+  video_id: string
+  video_type: string
   default_style?: InfoStyle
 }
 
