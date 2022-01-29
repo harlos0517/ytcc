@@ -1,4 +1,14 @@
-declare module 'passport-local-mongoose'
-declare module 'passport'
-declare module 'express-session'
-declare module 'body-parser'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { User } from '@/schema/user' // export interface User { _id: string, ... }
+
+declare module 'passport' {
+  interface Authenticator {
+    serializeUser<TID>(
+      fn: (
+        user: User,
+        done: (err: any, id?: TID) => void
+      ) => void
+    ): void
+  }
+}

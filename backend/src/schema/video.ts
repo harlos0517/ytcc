@@ -1,8 +1,8 @@
-import mongoose from 'mongoose'
+import mongoose, { Model, Document } from 'mongoose'
 
 import { schemaRequireAll } from '@/util/schema'
 
-export type Video = {
+export interface Video extends Document {
   type: string
   handle: string
   url: string
@@ -16,4 +16,4 @@ const VideoSchema = new mongoose.Schema({
   length: Number, // in seconds
 })
 schemaRequireAll(VideoSchema)
-export const VideoModel = mongoose.model('Video', VideoSchema)
+export const VideoModel: Model<Video> = mongoose.model('Video', VideoSchema)

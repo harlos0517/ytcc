@@ -1,17 +1,31 @@
-import mongoose from 'mongoose'
+import mongoose, {
+  PassportLocalModel,
+  PassportLocalDocument,
+  PassportLocalSchema,
+} from 'mongoose'
 import passportLocalMongoose from 'passport-local-mongoose'
+
 import { schemaRequireAll } from '@/util/schema'
 
-export type User = {
+export interface User extends PassportLocalDocument {
   email: string
-  password_hash: string
+  password: string
 }
 
 const UserSchema = new mongoose.Schema({
   email: String,
-  password_hash: String,
+  password: {
+    type: String,
+    required: false, // https://stackoverflow.com/questions/47757670
+  },
 })
 schemaRequireAll(UserSchema)
-UserSchema.plugin(passportLocalMongoose)
+UserSchema.plugin(passportLocalMongoose, {
+  usernameField: 'email',
+  passwordField: 'password',
+})
 
-export const UserModel = mongoose.model('User', UserSchema)
+export const UserModel: PassportLocalModel<User> = mongoose.model(
+  'User',
+  UserSchema as PassportLocalSchema,
+)

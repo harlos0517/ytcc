@@ -1,10 +1,10 @@
-import mongoose from 'mongoose'
+import mongoose, { Model, Document } from 'mongoose'
 import { ObjectId } from 'mongodb'
 
 import { InfoStyle, InfoStyleSchema } from './sub-schema/style'
 import { schemaRequireAll } from '@/util/schema'
 
-export type Track = {
+export interface Track extends Document {
   video_id: string
   video_type: string
   default_style?: InfoStyle
@@ -19,4 +19,4 @@ const TrackSchema = new mongoose.Schema({
   },
 })
 schemaRequireAll(TrackSchema)
-export const TrackModel = mongoose.model('Track', TrackSchema)
+export const TrackModel: Model<Track> = mongoose.model('Track', TrackSchema)

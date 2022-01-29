@@ -1,10 +1,10 @@
-import mongoose from 'mongoose'
+import mongoose, { Model, Document } from 'mongoose'
 import { ObjectId } from 'mongodb'
 
 import { InfoStyle, InfoStyleSchema } from './sub-schema/style'
 import { schemaRequireAll } from '@/util/schema'
 
-export type Info = {
+export interface Info extends Document {
   video_id: string
   track_id: string
   user_id: string
@@ -31,4 +31,4 @@ const InfoSchema = new mongoose.Schema({
 })
 schemaRequireAll(InfoSchema)
 
-export const InfoModel = mongoose.model('Info', InfoSchema)
+export const InfoModel: Model<Info> = mongoose.model('Info', InfoSchema)
