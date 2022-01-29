@@ -1,8 +1,18 @@
 import mongoose from 'mongoose'
 import { ObjectId } from 'mongodb'
 
-import { StyleSchema } from './sub-schema/style'
+import { InfoStyle, InfoStyleSchema } from './sub-schema/style'
 import { schemaRequireAll } from '@/util/schema'
+
+export type Info = {
+  video_id: string
+  track_id: string
+  user_id: string
+  text: string
+  start_time: number // in seconds
+  end_time?: number // in seconds
+  style?: InfoStyle
+}
 
 const InfoSchema = new mongoose.Schema({
   video_id: ObjectId,
@@ -15,7 +25,7 @@ const InfoSchema = new mongoose.Schema({
     required: false,
   },
   style: {
-    type: StyleSchema,
+    type: InfoStyleSchema,
     required: false,
   },
 })
