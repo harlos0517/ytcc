@@ -3,16 +3,23 @@ import expressSession from 'express-session'
 import bodyParser from 'body-parser'
 import passport from 'passport'
 import mongoose from 'mongoose'
+import dotenv from 'dotenv'
+import cors from 'cors'
 
 import { UserModel } from './schema/user'
 
 import userRouter from '@/route/user'
 
-const PORT = 1233
-const MONGO_DB = 'mongodb://localhost/ytcc-dev'
+dotenv.config()
 
 const App = express()
+App.use(bodyParser.json())
 App.use(bodyParser.urlencoded({ extended: true }))
+App.use(
+  cors({
+    origin: ['http://localhost:3000'],
+  }),
+)
 App.use(
   expressSession({
     secret: 'ytcc',
@@ -28,12 +35,12 @@ passport.deserializeUser(UserModel.deserializeUser())
 
 App.use(userRouter)
 
-App.listen(PORT)
-console.log(`Express App listening on port ${PORT}`)
+App.listen(process.env.PORT)
+console.log(`Express App listening on port ${process.env.PORT}`)
 
-mongoose.connect(MONGO_DB, {
-  user: '',
-  pass: '',
+mongoose.connect(process.env.MONGO_DB_HOST || '', {
+  user: process.env.MONGO_DB_USER,
+  pass: process.env.MONGO_DB_PWD,
   authSource: 'admin',
 })
-console.log(`Connected to MongoDB ${MONGO_DB}`)
+console.log(`Connected to MongoDB ${process.env.MONGO_DB_HOST}`)
