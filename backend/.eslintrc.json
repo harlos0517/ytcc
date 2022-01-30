@@ -3,7 +3,7 @@
     "node": true,
     "es2021": true
   },
-  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+  "extends": ["prettier"],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaVersion": 12,
@@ -15,6 +15,7 @@
     "semi": ["warn", "never"],
     "quotes": ["warn", "single"],
     "comma-dangle": ["warn", "always-multiline"],
-    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }]
+    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "arrow-parens": ["warn", "as-needed"]
   }
 }
