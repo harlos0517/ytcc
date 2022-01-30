@@ -11,8 +11,7 @@ export interface User extends PassportLocalDocument {
   email: string
 }
 
-const UserSchema = new mongoose.Schema({
-})
+const UserSchema = new mongoose.Schema({})
 schemaRequireAll(UserSchema)
 UserSchema.plugin(passportLocalMongoose, {
   usernameField: 'email',
