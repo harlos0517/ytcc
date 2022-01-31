@@ -1,44 +1,44 @@
-import express from 'express'
+import express, { RequestHandler } from 'express'
 
 import { UserModel } from '../schema/user'
 
 const router = express.Router()
 
+// auth middleware
+export const auth: RequestHandler = async (req, res, next) => {
+  if (req.isAuthenticated()) next()
+  else res.status(400).send({ error: 'Not Authenticated' })  
+}
+
 router.post('/register', async (req, res, _next) => {
   const { email, password } = req.body
   UserModel.register(new UserModel({ email }), password, async (err, _user) => {
-    if (err) return res.status(400).send({ error: 'Error on register: \n' + err })
-    const { error } = await UserModel.authenticate()(email, password)
-    if (error)
-      return res.status(400).send({ error: 'Error on authentication: \n' + error })
-    res.status(200).send({ success: true })
+    if (err) res.status(400).send({ error: 'Register Error: \n' + err })
+    else res.sendStatus(200)
   })
 })
 
 router.post('/login', async (req, res, _next) => {
   const { email, password } = req.body
   const { error, user } = await UserModel.authenticate()(email, password)
-  if (error) return res.status(400).send({ error: 'Error on authentication: \n' + error })
+  if (error) return res.status(400).send({ error: 'Login Error: \n' + error })
   req.login(user, _err => {
     req.session.user = user
-    res.status(200).send({ success: true, data: user })
+    res.status(200).send({ data: user })
   })
 })
 
-router.post('/logout', async (req, res, _next) => {
+router.post('/logout', auth, async (req, res, _next) => {
   req.logout()
-  res.status(200).send({ success: true })
+  res.sendStatus(200)
 })
 
-router.get('/secret', async (req, res, _next) => {
-  if (req.isAuthenticated()) res.status(200).send({ success: true, data: 'secret' })
-  else res.status(400).send({ error: 'You are not authenticated' })
+router.get('/secret', auth, async (req, res, _next) => {
+  res.status(200).send({ data: 'YTCC' })
 })
 
-router.get('/user/me', async (req, res, _next) => {
-  if (req.isAuthenticated())
-    res.status(200).send({ success: true, data: req.session.user })
-  else res.status(400).send({ error: 'You are not logged in' })
+router.get('/user/me', auth, async (req, res, _next) => {
+  res.status(200).send({ data: req.session.user })
 })
 
 export default router

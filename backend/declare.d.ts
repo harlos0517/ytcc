@@ -10,6 +10,6 @@ declare module 'passport' {
 
 declare module 'express-session' {
   export interface SessionData {
-    user: { [key: string]: any }
+    user: User
   }
 }
