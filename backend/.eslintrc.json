@@ -16,6 +16,7 @@
     "quotes": ["warn", "single"],
     "comma-dangle": ["warn", "always-multiline"],
     "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
-    "arrow-parens": ["warn", "as-needed"]
+    "arrow-parens": ["warn", "as-needed"],
+    "brace-style": ["warn", { "allowSingleLine": true }]
   }
 }
