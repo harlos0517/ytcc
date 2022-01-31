@@ -5,7 +5,6 @@ import { UserModel } from '../schema/user'
 const router = express.Router()
 
 router.post('/register', async (req, res, _next) => {
-  console.log(req.sessionID)
   const { email, password } = req.body
   UserModel.register(new UserModel({ email }), password, async (err, _user) => {
     if (err) return res.status(400).send({ error: 'Error on register: \n' + err })
@@ -26,9 +25,20 @@ router.post('/login', async (req, res, _next) => {
   })
 })
 
+router.post('/logout', async (req, res, _next) => {
+  req.logout()
+  res.status(200).send({ success: true })
+})
+
 router.get('/secret', async (req, res, _next) => {
   if (req.isAuthenticated()) res.status(200).send({ success: true, data: 'secret' })
   else res.status(400).send({ error: 'You are not authenticated' })
+})
+
+router.get('/user/me', async (req, res, _next) => {
+  if (req.isAuthenticated())
+    res.status(200).send({ success: true, data: req.session.user })
+  else res.status(400).send({ error: 'You are not logged in' })
 })
 
 export default router
