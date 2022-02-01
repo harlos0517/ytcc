@@ -21,8 +21,8 @@
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator'
 import { UserState } from '@/store/user'
-import getMe from '@/api/user/getMe'
-import getSecret from '@/api/user/getSecret'
+import getMeApi from '@/api/user/getMe'
+import getSecretApi from '@/api/user/getSecret'
 
 @Component
 export default class extends Vue {
@@ -44,7 +44,7 @@ export default class extends Vue {
   }
 
   async getMe() {
-    const { email } = await getMe()()
+    const { email } = await getMeApi()()
     this.$store.commit('user/setUser', email)
   }
 
@@ -60,7 +60,7 @@ export default class extends Vue {
   }
 
   refresh() {
-    getSecret()()
+    getSecretApi()()
   }
 }
 </script>
