@@ -16,19 +16,21 @@
     div
       button(@click="refresh()") REFRESH
     div: span SECRET: {{ secret }}
-    div: span RESPONSE: {{ response }}
+    div(v-for="(res, i) in response" :key="i")
+      span RESPONSE: {{ res }}
 </template>
 
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator'
 import axios from 'axios'
+import { axiosRequest, METHODS } from '@/util/api'
 
 @Component
 export default class extends Vue {
   user = null as any
   email = ''
   password = ''
-  response = ''
+  response = [] as string[]
   secret = ''
 
   mounted() {
@@ -37,58 +39,45 @@ export default class extends Vue {
   }
 
   getMe() {
-    axios
-      .get('http://localhost:1233/user/me', { withCredentials: true })
-      .then((res) => {
-        this.user = res.data.data || ''
-      })
-      .catch((err) => {
-        // eslint-disable-next-line no-console
-        console.error(err)
-        this.user = null
-      })
+    axiosRequest({
+      method: METHODS.GET,
+      path: '/user/me',
+      callbacks: {
+        onSuccess: data => { this.user = data },
+        onError: _ => { this.user = null },
+      }
+    })
   }
 
-  async login() {
-    await axios
-      .post(
-        'http://localhost:1233/login',
-        {
-          email: this.email,
-          password: this.password,
-        },
-        { withCredentials: true },
-      )
-      .then((res) => {
-        this.response = res ? res.data.success : ''
-        this.getMe()
-      })
-      .catch((err) => {
-        this.response = err.response?.data.error || ''
-      })
+  login() {
+    axiosRequest({
+      method: METHODS.POST,
+      path: '/login',
+      payload: {
+        email: this.email,
+        password: this.password,
+      },
+      callbacks: { onSuccess: data => { this.user = data } },
+    })
   }
 
   logout() {
-    axios
-      .post('http://localhost:1233/logout', {}, { withCredentials: true })
-      .then((res) => {
-        this.response = res ? res.data.success : ''
-        this.user = null
-      })
-      .catch((err) => {
-        this.response = err.response?.data.error || ''
-      })
+    axiosRequest({
+      method: METHODS.POST,
+      path: '/logout',
+      callbacks: { onSuccess: _ => { this.user = null } },
+    })
   }
 
   refresh() {
-    axios
-      .get('http://localhost:1233/secret', { withCredentials: true })
-      .then((res) => {
-        this.secret = res ? res.data.success : ''
-      })
-      .catch((err) => {
-        this.secret = err.response?.data.error || ''
-      })
+    axiosRequest({
+      method: METHODS.GET,
+      path: '/secret',
+      callbacks: {
+        onSuccess: data => { this.secret = data },
+        onError: _ => { this.secret = '' },
+      },
+    })
   }
 }
 </script>
