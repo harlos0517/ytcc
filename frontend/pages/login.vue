@@ -43,24 +43,23 @@ export default class extends Vue {
     this.refresh()
   }
 
-  getMe = async() => {
+  async getMe() {
     const { email } = await getMe()()
     this.$store.commit('user/setUser', email)
   }
 
-  login = () => {
-    console.log(this.email, this.password) // empty string
+  login() {
     this.$store.dispatch('user/login', {
       email: this.email,
       password: this.password,
     })
   }
 
-  logout = () => {
+  logout() {
     this.$store.dispatch('user/logout')
   }
 
-  refresh = () => {
+  refresh() {
     getSecret()()
   }
 }
