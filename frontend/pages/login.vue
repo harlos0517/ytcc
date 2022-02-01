@@ -1,7 +1,7 @@
 <template lang="pug">
   div
-    div(v-if="user")
-      div: span {{ user ? user.email : 'Please Login' }}
+    div(v-if="loggedIn")
+      div: span {{ userEmail }}
       div
         button(@click="logout()") LOGOUT
     div(v-else)
@@ -16,68 +16,52 @@
     div
       button(@click="refresh()") REFRESH
     div: span SECRET: {{ secret }}
-    div(v-for="(res, i) in response" :key="i")
-      span RESPONSE: {{ res }}
 </template>
 
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator'
-import axios from 'axios'
-import { axiosRequest, METHODS } from '@/util/api'
+import { UserState } from '@/store/user'
+import getMe from '@/api/user/getMe'
+import getSecret from '@/api/user/getSecret'
 
 @Component
 export default class extends Vue {
-  user = null as any
   email = ''
   password = ''
-  response = [] as string[]
   secret = ''
+
+  get userEmail() {
+    return (this.$store.state.user as UserState).email
+  }
+
+  get loggedIn() {
+    return (this.$store.state.user as UserState).loggedIn
+  }
 
   mounted() {
     this.getMe()
     this.refresh()
   }
 
-  getMe() {
-    axiosRequest({
-      method: METHODS.GET,
-      path: '/user/me',
-      callbacks: {
-        onSuccess: data => { this.user = data },
-        onError: _ => { this.user = null },
-      }
+  getMe = async() => {
+    const { email } = await getMe()()
+    this.$store.commit('user/setUser', email)
+  }
+
+  login = () => {
+    console.log(this.email, this.password) // empty string
+    this.$store.dispatch('user/login', {
+      email: this.email,
+      password: this.password,
     })
   }
 
-  login() {
-    axiosRequest({
-      method: METHODS.POST,
-      path: '/login',
-      payload: {
-        email: this.email,
-        password: this.password,
-      },
-      callbacks: { onSuccess: data => { this.user = data } },
-    })
+  logout = () => {
+    this.$store.dispatch('user/logout')
   }
 
-  logout() {
-    axiosRequest({
-      method: METHODS.POST,
-      path: '/logout',
-      callbacks: { onSuccess: _ => { this.user = null } },
-    })
-  }
-
-  refresh() {
-    axiosRequest({
-      method: METHODS.GET,
-      path: '/secret',
-      callbacks: {
-        onSuccess: data => { this.secret = data },
-        onError: _ => { this.secret = '' },
-      },
-    })
+  refresh = () => {
+    getSecret()()
   }
 }
 </script>
