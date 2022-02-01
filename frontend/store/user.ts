@@ -31,12 +31,12 @@ export const mutations: MutationTree<UserState> = {
 export const actions: ActionTree<UserState, UserState> = {
   login({ commit }, { email, password }) {
     login()({ email, password }).then(data => {
-      commit('user/setUser', data)
+      commit('setUser', data.email)
     }).catch()
   },
   logout({ commit }) {
     logout()().then(_ => {
-      commit('user/resetUser')
+      commit('resetUser')
     }).catch()
   },
 }

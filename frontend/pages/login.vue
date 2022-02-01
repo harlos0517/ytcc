@@ -60,7 +60,9 @@ export default class extends Vue {
   }
 
   refresh() {
-    getSecretApi()()
+    getSecretApi()().then(secret => {
+      this.secret = secret
+    }).catch(_ => { this.secret = '' })
   }
 }
 </script>
