@@ -13,6 +13,6 @@
     "comma-dangle": ["warn", "always-multiline"],
     "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
     "arrow-parens": ["warn", "as-needed"],
-    "brace-style": ["warn", { "allowSingleLine": true }]
+    "brace-style": ["warn", "1tbs", { "allowSingleLine": true }]
   }
 }
