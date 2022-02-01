@@ -15,6 +15,10 @@
     "arrow-parens": ["warn", "as-needed"],
     "brace-style": ["warn", "1tbs", { "allowSingleLine": true }],
     "curly": ["off", "multi"],
-    "multiline-ternary": ["off"]
+    "multiline-ternary": ["off"],
+    "max-len": ["warn", 100],
+    "no-multiple-empty-lines": ["off"],
+    "space-before-function-paren": ["warn", "never"],
+    "object-curly-spacing": ["warn", "always"]
   }
 }
