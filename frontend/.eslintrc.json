@@ -4,15 +4,17 @@
     "browser": true,
     "node": true
   },
-  "extends": ["@nuxtjs/eslint-config-typescript", "plugin:nuxt/recommended", "prettier"],
+  "extends": ["@nuxtjs/eslint-config-typescript", "plugin:nuxt/recommended"],
   "plugins": ["@typescript-eslint"],
   "rules": {
-    "indent": ["error", 2],
+    "indent": ["off", 2],
     "semi": ["warn", "never"],
     "quotes": ["warn", "single"],
     "comma-dangle": ["warn", "always-multiline"],
     "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
     "arrow-parens": ["warn", "as-needed"],
-    "brace-style": ["warn", "1tbs", { "allowSingleLine": true }]
+    "brace-style": ["warn", "1tbs", { "allowSingleLine": true }],
+    "curly": ["off", "multi"],
+    "multiline-ternary": ["off"]
   }
 }
