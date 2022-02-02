@@ -9,6 +9,7 @@ import cors from 'cors'
 import { UserModel } from './schema/user'
 
 import userRouter from '@/route/user'
+import videoRouter from '@/route/video'
 
 dotenv.config()
 
@@ -35,6 +36,7 @@ passport.serializeUser(UserModel.serializeUser())
 passport.deserializeUser(UserModel.deserializeUser())
 
 App.use(userRouter)
+App.use(videoRouter)
 
 App.listen(process.env.PORT)
 console.log(`Express App listening on port ${process.env.PORT}`)
