@@ -18,6 +18,7 @@
     "multiline-ternary": ["off"],
     "no-multiple-empty-lines": ["off"],
     "space-before-function-paren": ["warn", "never"],
-    "object-curly-spacing": ["warn", "always"]
+    "object-curly-spacing": ["warn", "always"],
+    "vue/multi-word-component-names": ["off"]
   }
 }
