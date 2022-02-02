@@ -11,33 +11,27 @@
       input(type="password" name="password_again" required)
     div
       button(@click="register()"): | REGISTER
-    div: span: | {{ response }}
 </template>
 
 <script lang="ts">
-import { Vue, Component } from 'vue-property-decorator'
-import axios from 'axios'
+import { defineComponent, ref } from '@nuxtjs/composition-api'
+import registerRoute from '~/api/user/register'
 
-@Component
-export default class extends Vue {
-  email = ''
-  password = ''
-  response = ''
+export default defineComponent({
+  setup() {
+    const email = ref('')
+    const password = ref('')
 
-  register() {
-    axios
-      .post('http://localhost:1233/register', {
-        email: this.email,
-        password: this.password,
+    const register = () => {
+      registerRoute()({
+        email: email.value,
+        password: password.value,
       })
-      .then(res => {
-        this.response = res ? res.data.success : ''
-      })
-      .catch((err) => {
-        this.response = err.response?.data.error || ''
-      })
-  }
-}
+    }
+
+    return { email, password, register }
+  },
+})
 </script>
 
 <style lang="sass" scoped></style>

@@ -19,52 +19,55 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component } from 'vue-property-decorator'
-import { UserState } from '@/store/user'
+import { defineComponent, ref, computed, useStore, onMounted } from '@nuxtjs/composition-api'
+import { StoreState } from '@/store'
+
 import getMeApi from '@/api/user/getMe'
 import getSecretApi from '@/api/user/getSecret'
 
-@Component
-export default class extends Vue {
-  email = ''
-  password = ''
-  secret = ''
+export default defineComponent({
+  setup() {
+    const store = useStore() as StoreState
+    const userStore = store.state.user
 
-  get userEmail() {
-    return (this.$store.state.user as UserState).email
-  }
+    const email = ref('')
+    const password = ref('')
+    const secret = ref('')
+    const userEmail = computed(() => userStore.email)
+    const loggedIn = computed(() => userStore.loggedIn)
 
-  get loggedIn() {
-    return (this.$store.state.user as UserState).loggedIn
-  }
-
-  mounted() {
-    this.getMe()
-    this.refresh()
-  }
-
-  async getMe() {
-    const { email } = await getMeApi()()
-    this.$store.commit('user/setUser', email)
-  }
-
-  login() {
-    this.$store.dispatch('user/login', {
-      email: this.email,
-      password: this.password,
+    onMounted(() => {
+      getMe()
+      refresh()
     })
-  }
 
-  logout() {
-    this.$store.dispatch('user/logout')
-  }
+    const getMe = async() => {
+      const { email } = await getMeApi()()
+      store.commit('user/setUser', email)
+    }
 
-  refresh() {
-    getSecretApi()().then(secret => {
-      this.secret = secret
-    }).catch(_ => { this.secret = '' })
-  }
-}
+    const login = () => {
+      store.dispatch('user/login', {
+        email: email.value,
+        password: password.value,
+      })
+    }
+
+    const logout = () => {
+      store.dispatch('user/logout')
+    }
+
+    const refresh = () => {
+      getSecretApi()().then(newSecret => {
+        secret.value = newSecret
+      }).catch(_ => { secret.value = '' })
+    }
+
+    return {
+      email, password, secret, userEmail, loggedIn, login, logout, refresh,
+    }
+  },
+})
 </script>
 
 <style lang="sass" scoped></style>
