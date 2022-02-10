@@ -5,20 +5,20 @@ import { UserModel } from '../schema/user'
 const router = express.Router()
 
 // auth middleware
-export const auth: RequestHandler = async (req, res, next) => {
+export const auth: RequestHandler = (req, res, next) => {
   if (req.isAuthenticated()) next()
-  else res.status(400).send({ error: 'Not Authenticated' })  
+  else res.status(401).send({ error: 'Not Authenticated' })  
 }
 
-router.post('/register', async (req, res, _next) => {
+router.post('/register', (req, res, _next) => {
   const { email, password } = req.body
-  UserModel.register(new UserModel({ email }), password, async (err, _user) => {
+  UserModel.register(new UserModel({ email }), password, async(err, _user) => {
     if (err) res.status(400).send({ error: 'Register Error: \n' + err })
     else res.sendStatus(200)
   })
 })
 
-router.post('/login', async (req, res, _next) => {
+router.post('/login', async(req, res, _next) => {
   const { email, password } = req.body
   const { error, user } = await UserModel.authenticate()(email, password)
   if (error) return res.status(400).send({ error: 'Login Error: \n' + error })
@@ -28,16 +28,16 @@ router.post('/login', async (req, res, _next) => {
   })
 })
 
-router.post('/logout', auth, async (req, res, _next) => {
+router.post('/logout', auth, (req, res, _next) => {
   req.logout()
   res.sendStatus(200)
 })
 
-router.get('/secret', auth, async (req, res, _next) => {
+router.get('/secret', auth, (req, res, _next) => {
   res.status(200).send({ data: 'YTCC' })
 })
 
-router.get('/user/me', auth, async (req, res, _next) => {
+router.get('/user/me', auth, (req, res, _next) => {
   res.status(200).send({ data: req.session.user })
 })
 

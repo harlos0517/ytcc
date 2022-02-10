@@ -7,7 +7,7 @@
 
 - Track
   - video_id: Video._id
-  - video_type: string
+  - type: string
   - default_style: Style | null
 
 - Info

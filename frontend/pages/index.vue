@@ -8,7 +8,7 @@
 import { defineComponent, ref, onMounted } from '@nuxtjs/composition-api'
 // import { StoreState } from '@/store'
 
-import newVideoRoute from '@/api/video/newVideo'
+import newVideoRoute from '@/routes/video/newVideo'
 
 export default defineComponent({
   setup() {

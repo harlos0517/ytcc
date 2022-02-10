@@ -6,13 +6,13 @@ import { schemaRequireAll } from '@/util/schema'
 
 export interface Track extends Document {
   video_id: string
-  video_type: string
+  type: string
   default_style?: InfoStyle
 }
 
 const TrackSchema = new mongoose.Schema({
   video_id: ObjectId,
-  video_type: String,
+  type: String,
   default_style: {
     type: InfoStyleSchema,
     required: false,

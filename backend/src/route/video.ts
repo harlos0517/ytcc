@@ -7,7 +7,7 @@ import { auth } from './user'
 
 const router = express.Router()
 
-router.post('/video', auth, async (req, res, _next) => {
+router.post('/video', auth, async(req, res, _next) => {
   const { videoLink } = req.body
   const youtubeUrlRegex =
     /^(?:https?:\/\/)?(?:m\.|www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/
@@ -22,7 +22,7 @@ router.post('/video', auth, async (req, res, _next) => {
       if (!handleMatch) return res.status(400).send({ error: 'Parse Url Error' })
       const handle = handleMatch[0].slice(1, 12)
       const video = await VideoModel.findOne({ handle }).exec()
-      if (video) return res.status(400).send({ error: 'Video already exists' })
+      if (video) return res.status(200).send({ data: video })
       const newVideo = await VideoModel.create({
         type: 'youtube',
         handle,

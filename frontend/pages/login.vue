@@ -22,8 +22,8 @@
 import { defineComponent, ref, computed, useStore, onMounted } from '@nuxtjs/composition-api'
 import { StoreState } from '@/store'
 
-import getMeApi from '@/api/user/getMe'
-import getSecretApi from '@/api/user/getSecret'
+import getMeApi from '@/routes/user/getMe'
+import getSecretApi from '@/routes/user/getSecret'
 
 export default defineComponent({
   setup() {

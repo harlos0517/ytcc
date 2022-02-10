@@ -1,4 +1,4 @@
-import { axiosRequest, METHODS } from '@/api/util'
+import { axiosRequest, METHODS } from '@/routes/util'
 
 type Data = {
   email: string,

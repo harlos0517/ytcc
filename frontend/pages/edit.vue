@@ -1,10 +1,10 @@
 <template lang="pug">
-  .w-100.vh-100.d-flex.flex-column.bg-dark.text-white
+  .fill-screen.flex-column.bg-dark.text-white
 
     #top: EditHeader
 
-    #mid.flex-fill.d-flex.flex-row.align-items-stretch.position-relative
-      #video.d-flex.flex-column
+    #mid.flex-fill.flex-row.position-relative
+      #video.flex-column
         #player.position-relative.flex-fill
           youtube(
             ref="youtube"
@@ -21,8 +21,33 @@
           )
           #video-subs.w-100.position-absolute.text-center.h3
         EditTimeline(:videoLength="videoLength" :player="player")
-      #subtitle
-    #bot.d-flex.flex-row.align-items-center
+      #subtitle.flex-column
+        #tracks
+          ul.nav.nav-tabs
+            li.nav-item(v-for="(t, i) in tracks")
+              a.nav-link.btn(:class="{ active: i === curTrack}")
+                span(@click="curTrack = i") {{ i }}
+                button.btn-close.close.btn-close-white(
+                  type="button"
+                  aria-label="Close"
+                  @click="deleteTrack(i)"
+                )
+            li.nav-item
+              a.nav-link(@click="newTrack") +
+        #subs.flex-fill.position-relative
+          .px-2.wrap.position-absolute.w-100
+            EditSubtitle(
+              v-for="(sub, i) in (tracks[curTrack] ? tracks[curTrack].data : [])"
+              :keys="i"
+              :subtitle="sub"
+            )
+            button.btn.btn-dark.w-100.text-center.p-3(
+              type="button"
+              @click="addSubtitle()"
+            ) +
+        #toolbar.flex-row.middle-center
+          span.m-0.h2.text-monospace {{ getTimeString(cursor) }}
+    #bot.d-flex.flex-row
       span {{ infoText }}
 </template>
 
@@ -35,7 +60,7 @@ import {
   computed,
   onMounted,
 } from '@nuxtjs/composition-api'
-import { mapStateString, PlayerState, YouTubePlayer } from '~/components/edit/youtube-player'
+import { mapStateString, PlayerState, YouTubePlayer } from '@/components/edit/youtube-player'
 
 class Subtitles {
   data: Array<any>
@@ -106,6 +131,7 @@ export default defineComponent({
     const curVersion = ref('1.0.0')
     const infoText = ref('')
     const videoLength = ref(60)
+    const cursor = ref(0)
 
     const player = computed(() => youtube.value?.player)
 
@@ -135,26 +161,66 @@ export default defineComponent({
       infoText.value = mapStateString(state.value)
     }
 
-    onMounted(() => {})
+    const getTimeString = (time: number) => {
+      const rounded = Math.round(time * 100) / 100
+      const hour = Math.floor(rounded / 3600)
+      const min = Math.floor(rounded % 3600 / 60)
+      const sec = Math.floor(time % 60 * 100) / 100
+      const hourString = videoLength.value > 3600 ? hour.toString() + ':' : ''
+      const minString = (videoLength.value > 3600
+        ? min.toString().padStart(2, '0') : min.toString()) + ':'
+      const secString = sec.toFixed(2).toString().padStart(5, '0')
+      return hourString + minString + secString
+    }
+
+    const deleteTrack = () => {
+    }
+    const newTrack = () => {
+    }
+    const addSubtitle = () => {
+    }
+
+    // update routine
+    const update = () => {
+      window.requestAnimationFrame(update)
+      updateCursor()
+    }
+
+    const updateCursor = async() => {
+      cursor.value = await player.value?.getCurrentTime() || 0
+    }
+
+    onMounted(() => {
+      update()
+    })
 
     return {
       youtube,
+      tracks,
+      curTrack,
       state,
       infoText,
       videoLength,
       player,
+      cursor,
       onReady,
       onPlaying,
       onPaused,
       onEnded,
       onBuffering,
       onCued,
+      getTimeString,
+      deleteTrack,
+      newTrack,
+      addSubtitle,
     }
   },
 })
 </script>
 
 <style lang="sass" scoped>
+@import '../global.sass'
+
 #video
   flex: 3 0 0
 #subtitle
