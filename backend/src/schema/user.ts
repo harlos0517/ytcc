@@ -5,11 +5,10 @@ import mongoose, {
 } from 'mongoose'
 import passportLocalMongoose from 'passport-local-mongoose'
 
+import { User } from '@api/user'
 import { schemaRequireAll } from '@/util/schema'
 
-export interface User extends PassportLocalDocument {
-  email: string
-}
+export interface UserDoc extends User, PassportLocalDocument {}
 
 const UserSchema = new mongoose.Schema({})
 schemaRequireAll(UserSchema)
@@ -17,7 +16,7 @@ UserSchema.plugin(passportLocalMongoose, {
   usernameField: 'email',
 })
 
-export const UserModel: PassportLocalModel<User> = mongoose.model(
+export const UserModel: PassportLocalModel<UserDoc> = mongoose.model(
   'User',
   UserSchema as PassportLocalSchema,
 )

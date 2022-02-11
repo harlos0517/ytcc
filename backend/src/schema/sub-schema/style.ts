@@ -1,18 +1,8 @@
 import mongoose from 'mongoose'
 
-export type InfoStyle = {
-  size: number // px
-  position: {
-    horizontal: number // in percentage
-    vertical: number // in percentage
-  }
-  align: {
-    horizontal: number // in percentage
-    vertical: number // in percentage
-  }
-  color: string // #00000000
-  background_color: string // #00000000
-}
+import { InfoStyle as InfoStyleType } from '@api/style'
+
+export type InfoStyle = InfoStyleType
 
 export const InfoStyleSchema = new mongoose.Schema({
   size: Number, // px

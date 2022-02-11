@@ -219,7 +219,7 @@ export default defineComponent({
 </script>
 
 <style lang="sass" scoped>
-@import '../global.sass'
+@import '@/global.sass'
 
 #video
   flex: 3 0 0

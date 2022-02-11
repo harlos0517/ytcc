@@ -1,6 +1,6 @@
 import { Store } from 'vuex'
 
-import { UserState } from './user'
+import { UserState } from '@/store/user'
 
 export type State = {
   user: UserState

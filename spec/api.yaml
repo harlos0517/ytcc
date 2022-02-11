@@ -37,7 +37,7 @@
 
 # API
 - /video
-  - GET /video?video_type={video_type}&handle={handle}
+  - GET /video?type={type}&handle={handle}
   - GET /video/:video_id
   - GET /video/:video_id/tracks
   - POST /video
@@ -50,9 +50,9 @@
   - PUT /track/:track_id
 
 - /info
-  - GET /info/:info_id
-  - POST /info/
-  - PUT /info/:info_id
+  - GET /infos?ids[]=<info_id>
+  - POST /infos/
+  - PUT /infos/
 
 - /user
   - POST /register

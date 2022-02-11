@@ -13,7 +13,6 @@
     "forceConsistentCasingInFileNames": false,
     "baseUrl": ".",
     "paths": {
-      "~/*": ["./*"],
       "@/*": ["./*"],
       "@api/*": ["../api/*"]
     },

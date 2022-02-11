@@ -1,14 +1,15 @@
 import express from 'express'
 import axios from 'axios'
 
-import { VideoModel } from '../schema/video'
+import { VideoModel } from '@/schema/video'
+import * as VideoApi from '@api/video'
 
-import { auth } from './user'
+import { auth } from '@/middleware'
 
 const router = express.Router()
 
 router.post('/video', auth, async(req, res, _next) => {
-  const { videoLink } = req.body
+  const { videoLink } = req.body as VideoApi.PostVideo.Request
   const youtubeUrlRegex =
     /^(?:https?:\/\/)?(?:m\.|www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/
   const handleRegex = /[=/][\w-]{11}($|[^\w-])/
@@ -29,7 +30,8 @@ router.post('/video', auth, async(req, res, _next) => {
         url: `youtu.be/${videoLink}`,
         length: 0,
       })
-      res.status(200).send({ data: newVideo })
+      const data: VideoApi.PostVideo.Response = newVideo
+      res.status(200).send({ data })
     }).catch(err => {
       return res.status(400).send({ error: 'Fetch Url Error: ' + err })
     })

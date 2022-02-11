@@ -1,20 +1,13 @@
-import mongoose, { Model, Document } from 'mongoose'
+import { model, Model, Document, Schema } from 'mongoose'
 import { ObjectId } from 'mongodb'
 
-import { InfoStyle, InfoStyleSchema } from './sub-schema/style'
+import { InfoStyleSchema } from '@/schema/sub-schema/style'
+import { Info } from '@api/info'
 import { schemaRequireAll } from '@/util/schema'
 
-export interface Info extends Document {
-  video_id: string
-  track_id: string
-  user_id: string
-  text: string
-  start_time: number // in seconds
-  end_time?: number // in seconds
-  style?: InfoStyle
-}
+export interface InfoDoc extends Info, Document {}
 
-const InfoSchema = new mongoose.Schema({
+const InfoSchema = new Schema({
   video_id: ObjectId,
   track_id: ObjectId,
   user_id: ObjectId,
@@ -31,4 +24,4 @@ const InfoSchema = new mongoose.Schema({
 })
 schemaRequireAll(InfoSchema)
 
-export const InfoModel: Model<Info> = mongoose.model('Info', InfoSchema)
+export const InfoModel: Model<InfoDoc> = model('Info', InfoSchema)

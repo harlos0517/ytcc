@@ -95,7 +95,7 @@ export default defineComponent({
     // eslint-disable-next-line vue/require-prop-types
     player: { default: null as YouTubePlayer | null },
   },
-  setup(props, target) {
+  setup(props) {
     const { videoLength, player } = toRefs(props)
 
     const timelineSvg = ref<HTMLElement | null>(null)
