@@ -15,7 +15,7 @@
 
 <script lang="ts">
 import { defineComponent, ref } from '@nuxtjs/composition-api'
-import registerRoute from '@/routes/user/register'
+import { register as registerRoute } from '@/routes/user'
 
 export default defineComponent({
   setup() {

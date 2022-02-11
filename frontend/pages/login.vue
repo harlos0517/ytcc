@@ -22,8 +22,7 @@
 import { defineComponent, ref, computed, useStore, onMounted } from '@nuxtjs/composition-api'
 import { StoreState } from '@/store'
 
-import getMeApi from '@/routes/user/getMe'
-import getSecretApi from '@/routes/user/getSecret'
+import { getMe as getMeRoute, getSecret as getSecretRoute } from '@/routes/user'
 
 export default defineComponent({
   setup() {
@@ -42,7 +41,7 @@ export default defineComponent({
     })
 
     const getMe = async() => {
-      const { email } = await getMeApi()()
+      const { email } = await getMeRoute()()
       store.commit('user/setUser', email)
     }
 
@@ -58,7 +57,7 @@ export default defineComponent({
     }
 
     const refresh = () => {
-      getSecretApi()().then(newSecret => {
+      getSecretRoute()().then(newSecret => {
         secret.value = newSecret
       }).catch(_ => { secret.value = '' })
     }

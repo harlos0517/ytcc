@@ -37,4 +37,12 @@ router.post('/video', auth, async(req, res, _next) => {
     })
 })
 
+router.get('/video/:id', auth, async(req, res, _next) => {
+  const { id } = req.params
+  const video = await VideoModel.findById(id)
+  if (!video) return res.sendStatus(404)
+  const data: VideoApi.GetVideoById.Response = video
+  res.status(200).send({ data })
+})
+
 export default router

@@ -28,7 +28,7 @@
             y2="24"
             stroke="#0DCAF0"
           )
-          text(
+          text.text-monospace.small(
             :x="`${getDisplayPositionRatio(getRulerTime('main', x)) + 0.5}%`"
             y="32"
             fill="#999999"
@@ -181,7 +181,7 @@ export default defineComponent({
       // Yeah fuck the algo, brutal works la
     }
     const autoScroll = async() => {
-      if (await player.value.getPlayerState() === 1) {
+      if (player.value && await player.value.getPlayerState() === 1) {
         const ratio = 0.9
         if (!isCursorInView.value)
           timelineStart.value = cursor.value - timelineLength.value * (1 - ratio)

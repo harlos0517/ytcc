@@ -8,7 +8,7 @@
         #player.position-relative.flex-fill
           youtube(
             ref="youtube"
-            video-id="Jt-5wQroOXA"
+            :video-id="video ? video.handle : ''"
             resize
             :resizeDelay="1"
             fitParent
@@ -59,7 +59,10 @@ import {
   ref,
   computed,
   onMounted,
+  useRoute,
 } from '@nuxtjs/composition-api'
+import { Video } from '@api/video'
+import { getVideoById as getVideoByIdRoute } from '@/routes/video'
 import { mapStateString, PlayerState, YouTubePlayer } from '@/components/edit/youtube-player'
 
 class Subtitles {
@@ -117,9 +120,11 @@ class Subtitles {
 export default defineComponent({
   setup() {
     // const store = useStore() as StoreState
+    const route = useRoute()
+    const videoId = route.value.query.videoId
+    const video = ref<Video | null>(null)
 
     const youtube = ref<HTMLElement & { player: YouTubePlayer } | null>(null)
-    const videoId = ref('')
     const videoIdInput = ref('')
     const subtitles = ref(new Subtitles())
     const tracks = ref([])
@@ -156,7 +161,8 @@ export default defineComponent({
       state.value = PlayerState.BUFFERING
       infoText.value = mapStateString(state.value)
     }
-    const onCued = (e: CustomEvent | any) => {
+    const onCued = async(e: CustomEvent | any) => {
+      videoLength.value = await player.value?.getDuration() || 60
       state.value = PlayerState.VIDEO_CUED
       infoText.value = mapStateString(state.value)
     }
@@ -190,12 +196,15 @@ export default defineComponent({
       cursor.value = await player.value?.getCurrentTime() || 0
     }
 
-    onMounted(() => {
+    onMounted(async() => {
+      if (typeof videoId === 'string')
+        video.value = await getVideoByIdRoute(videoId)()
       update()
     })
 
     return {
       youtube,
+      video,
       tracks,
       curTrack,
       state,

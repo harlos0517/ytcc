@@ -1,6 +1,5 @@
 import { GetterTree, ActionTree, MutationTree } from 'vuex'
-import login from '@/routes/user/login'
-import logout from '@/routes/user/logout'
+import { login, logout } from '@/routes/user'
 
 export type UserState = {
   loggedIn: boolean
