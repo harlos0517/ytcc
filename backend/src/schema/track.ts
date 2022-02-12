@@ -9,6 +9,7 @@ export interface TrackDoc extends Track, Document {}
 
 const TrackSchema = new mongoose.Schema({
   video_id: ObjectId,
+  user_id: ObjectId,
   type: String,
   default_style: {
     type: InfoStyleSchema,

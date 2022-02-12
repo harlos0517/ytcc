@@ -3,6 +3,7 @@ import { InfoStyle } from "./style";
 
 export type Track = {
   video_id: string
+  user_id: string
   type: string
   default_style?: InfoStyle
 }
@@ -14,7 +15,7 @@ export namespace GetTrack {
 }
 
 export namespace GetTrackInfos {
-  export type Response = (InfoResponse | null)[]
+  export type Response = InfoResponse[]
 }
 
 export namespace PostTrack {

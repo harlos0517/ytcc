@@ -19,7 +19,11 @@ router.get('/infos', auth, async(req, res, _next) => {
 
 router.post('/infos', auth, async(req, res, _next) => {
   const infos = req.body as InfoApi.PostInfos.Request
-  const data: InfoApi.PostInfos.Response = await InfoModel.insertMany(infos)
+  const newInfos = await InfoModel.insertMany(infos.map(info => ({
+    ...info,
+    user_id: req.session.user._id,
+  })))
+  const data: InfoApi.PostInfos.Response = newInfos
   res.status(200).send({ data })
 })
 

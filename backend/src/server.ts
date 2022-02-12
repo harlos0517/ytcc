@@ -37,6 +37,7 @@ passport.use(UserModel.createStrategy())
 passport.serializeUser(UserModel.serializeUser())
 passport.deserializeUser(UserModel.deserializeUser())
 
+mongoose.Schema.Types.String.checkRequired(v => v != null)
 App.use(userRouter)
 App.use(videoRouter)
 App.use(trackRouter)

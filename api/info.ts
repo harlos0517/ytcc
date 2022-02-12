@@ -10,6 +10,8 @@ export type Info = {
   style?: InfoStyle
 }
 
+export type InfoRequest = Omit<Info, 'user_id'>
+
 export type InfoResponse = Info & { _id: string }
 
 export namespace GetInfos {
@@ -17,11 +19,11 @@ export namespace GetInfos {
 }
 
 export namespace PostInfos {
-  export type Request = Info[]
+  export type Request = InfoRequest[]
   export type Response = InfoResponse[]
 }
 
 export namespace PutInfos {
-  export type Request = (Partial<InfoResponse> & { _id: string })[]
+  export type Request = (Partial<InfoRequest> & { _id: string })[]
   export type Response = (InfoResponse | null)[]
 }

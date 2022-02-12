@@ -15,4 +15,3 @@ export const logout = () =>
 
 export const register = () =>
   axiosRequest<UserApi.Register.Response, UserApi.Register.Request>(METHODS.POST, '/register')
-

@@ -25,8 +25,8 @@
         #tracks
           ul.nav.nav-tabs
             li.nav-item(v-for="(t, i) in tracks")
-              a.nav-link.btn(:class="{ active: i === curTrack}")
-                span(@click="curTrack = i") {{ i }}
+              a.nav-link.btn(:class="{ active: i === curTrackId}")
+                span(@click="curTrackId = i") {{ i }}
                 button.btn-close.close.btn-close-white(
                   type="button"
                   aria-label="Close"
@@ -37,8 +37,8 @@
         #subs.flex-fill.position-relative
           .px-2.wrap.position-absolute.w-100
             EditSubtitle(
-              v-for="(sub, i) in (tracks[curTrack] ? tracks[curTrack].data : [])"
-              :keys="i"
+              v-for="(sub, i) in curSubs"
+              :key="i"
               :subtitle="sub"
             )
             button.btn.btn-dark.w-100.text-center.p-3(
@@ -62,7 +62,20 @@ import {
   useRoute,
 } from '@nuxtjs/composition-api'
 import { Video } from '@api/video'
-import { getVideoById as getVideoByIdRoute } from '@/routes/video'
+import { Track } from '@api/track'
+import {
+  getVideoById as getVideoByIdRoute,
+  getVideoTracks as getVideoTracksRoute,
+} from '@/routes/video'
+import {
+  getInfos as getInfosRoute,
+  newInfos as newInfosRoute,
+} from '@/routes/info'
+import {
+  getTrackInfos as getTrackInfosRoute,
+  newTrack as newTrackRoute,
+} from '@/routes/track'
+
 import { mapStateString, PlayerState, YouTubePlayer } from '@/components/edit/youtube-player'
 
 class Subtitles {
@@ -121,14 +134,14 @@ export default defineComponent({
   setup() {
     // const store = useStore() as StoreState
     const route = useRoute()
-    const videoId = route.value.query.videoId
+    const videoId = route.value.query.videoId as string
     const video = ref<Video | null>(null)
 
     const youtube = ref<HTMLElement & { player: YouTubePlayer } | null>(null)
     const videoIdInput = ref('')
     const subtitles = ref(new Subtitles())
-    const tracks = ref([])
-    const curTrack = ref(0)
+    const tracks = ref<(Track & { _id: string, subs: any[] })[]>([])
+    const curTrackId = ref(0)
     const state = ref(undefined as PlayerState | undefined)
     const curSub = ref(0)
     const mousePosition = ref({ x: 0, y: 0 })
@@ -139,6 +152,8 @@ export default defineComponent({
     const cursor = ref(0)
 
     const player = computed(() => youtube.value?.player)
+    const curTrack = computed(() => tracks.value[curTrackId.value])
+    const curSubs = computed(() => curTrack.value?.subs || [])
 
     const onReady = async(e: CustomEvent | any) => {
       state.value = await player.value?.getPlayerState()
@@ -181,9 +196,23 @@ export default defineComponent({
 
     const deleteTrack = () => {
     }
-    const newTrack = () => {
+    const newTrack = async() => {
+      const track = await newTrackRoute()({ videoId })
+      tracks.value.push({ ...track, subs: [] as Subtitles[] })
     }
-    const addSubtitle = () => {
+    const addSubtitle = async() => {
+      const infos = await newInfosRoute()([{
+        video_id: videoId,
+        track_id: curTrack.value._id,
+        text: '',
+        start_time: Math.max(0, cursor.value - 1),
+        end_time: cursor.value,
+      }])
+      if (curTrack.value.subs) {
+        curTrack.value.subs?.push(...infos)
+      } else {
+        curTrack.value.subs = infos
+      }
     }
 
     // update routine
@@ -197,8 +226,13 @@ export default defineComponent({
     }
 
     onMounted(async() => {
-      if (typeof videoId === 'string')
-        video.value = await getVideoByIdRoute(videoId)()
+      video.value = await getVideoByIdRoute(videoId)()
+      const newTracks = await getVideoTracksRoute(videoId)()
+      tracks.value = newTracks.map(t => ({ ...t, subs: [] as any[] }))
+      tracks.value.forEach(async t => {
+        const subs = await getTrackInfosRoute(t._id)()
+        t.subs.push(...subs)
+      })
       update()
     })
 
@@ -206,7 +240,9 @@ export default defineComponent({
       youtube,
       video,
       tracks,
+      curTrackId,
       curTrack,
+      curSubs,
       state,
       infoText,
       videoLength,

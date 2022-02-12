@@ -27,6 +27,7 @@ router.post('/track', auth, async(req, res, _next) => {
   const { videoId } = req.body as TrackApi.PostTrack.Request
   const newTrack = await TrackModel.create({
     video_id: videoId,
+    user_id: req.session.user._id,
     type: 'cc',
     default_style: null,
   })

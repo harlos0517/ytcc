@@ -7,3 +7,6 @@ export const newVideo = () =>
 export const getVideoById = (videoId: string) =>
   axiosRequest<VideoApi.GetVideoById.Response>(METHODS.GET, '/video/' + videoId)
 
+export const getVideoTracks = (videoId: string) =>
+  axiosRequest<VideoApi.GetVideoTracks.Response>(METHODS.GET, `/video/${videoId}/tracks`)
+
