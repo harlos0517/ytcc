@@ -1,11 +1,15 @@
 <template lang="pug">
-  svg#timeline-map-svg(width="100%" height="48px" ref="timelineSvg")
+  svg#timeline-map-svg(
+    width="100%"
+    :height="40 + trackHeight * trackNum"
+    ref="timelineSvg"
+  )
     g#timeline-bg
       rect(
         x="0"
         y="8"
         width="100%"
-        height="40"
+        :height="32 + trackHeight * trackNum"
         fill="#000000"
       )
     g#timeline-map-timeline-scroll
@@ -28,10 +32,11 @@
             y2="24"
             stroke="#0DCAF0"
           )
-          text.text-monospace.small(
+          text.text-monospace(
             :x="`${getDisplayPositionRatio(getRulerTime('main', x)) + 0.5}%`"
             y="32"
             fill="#999999"
+            font-size="10px"
           ) {{ getTimeString(getRulerTime('main', x)) }}
       g.sub-ruler()
         line(
@@ -54,23 +59,46 @@
     g#timeline-subs
       g.timeline-track(
         v-for="(t, i) in tracks"
-        :fill="i === curTrack ? '#FFFFFF22' : '#00000000'"
-        :style="{ opacity: i === curTrack ? 1 : .5 }"
-        @click="curTrack = i"
+        :fill="t._id === curTrackId ? '#FFFFFF22' : '#00000000'"
+        :style="{ opacity: t._id === curTrackId ? 1 : .5 }"
+        @click="curTrackId = t._id"
       )
         g.position-absolute.timeline-sub.rounded.h-100(
-          v-for="sub in t.data"
-          :x="getDisplayPositionRatio(sub.start) + '%'"
-          :width="getDisplayWidthRatio(sub.start - sub.end) + '%'"
+          v-for="sub in t.subs.data"
         )
-          .position-absolute.move-target(draggable="true" @drag="moveSubtitle($event, sub)" @dragstart="setDragPoint(sub)" @dragend="saveSubtitles")
-          .drag.drag-start.position-absolute(draggable="true" :class="{ 'd-none': !isDragEnabled(sub) }" @drag="dragSubtitle(sub, 'start')" @dragend="saveSubtitles")
-          .drag.drag-end.position-absolute(draggable="true" :class="{ 'd-none': !isDragEnabled(sub) }" @drag="dragSubtitle(sub, 'end')" @dragend="saveSubtitles")
+          rect(
+            :x="getDisplayPositionRatio(sub.startTime) + '%'"
+            :y="40 + trackHeight * i"
+            rx="4"
+            :width="getSubWidth(sub)"
+            height="40"
+            fill="#FFFFFF88"
+            stroke="#FFFFFF"
+            stroke-width="0.5px"
+          )
+          //- rect.position-absolute.move-target(
+          //-   draggable="true"
+          //-   @drag="moveSubtitle($event, sub)"
+          //-   @dragstart="setDragPoint(sub)"
+          //-   @dragend="saveSubtitles"
+          //- )
+          //- rect.drag.drag-start.position-absolute(
+          //-   draggable="true"
+          //-   :class="{ 'd-none': !isDragEnabled(sub) }"
+          //-   @drag="dragSubtitle(sub, 'start')"
+          //-   @dragend="saveSubtitles"
+          //- )
+          //- rect.drag.drag-end.position-absolute(
+          //-   draggable="true"
+          //-   :class="{ 'd-none': !isDragEnabled(sub) }"
+          //-   @drag="dragSubtitle(sub, 'end')"
+          //-   @dragend="saveSubtitles"
+          //- )
     line#cursor(
       :x1="getDisplayPositionRatio(cursor) + '%'"
       y1="8"
       :x2="getDisplayPositionRatio(cursor) + '%'"
-      y2="40"
+      :y2="40 + trackHeight * trackNum"
       stroke="#FF0000"
     )
     g#timeline-box
@@ -78,7 +106,7 @@
         x="0"
         y="8"
         width="100%"
-        height="40"
+        :height="32 + 40 * trackNum"
         fill="#00000000"
         @click="timelineClick"
         @wheel="timelineWheel"
@@ -86,17 +114,23 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, onMounted, toRefs } from '@nuxtjs/composition-api'
+import { defineComponent, ref, computed, onMounted, toRefs, PropType } from '@nuxtjs/composition-api'
 import { YouTubePlayer } from './youtube-player'
+import { Sub, SubTrack } from '@/pages/edit.vue'
 
 export default defineComponent({
   props: {
     videoLength: { type: Number, default: 60 },
     // eslint-disable-next-line vue/require-prop-types
     player: { default: null as YouTubePlayer | null },
+    tracks: {
+      type: Array as PropType<SubTrack[]>,
+      default: [] as SubTrack[],
+    },
+    curTrackId: { type: String, default: '' },
   },
   setup(props) {
-    const { videoLength, player } = toRefs(props)
+    const { videoLength, player, tracks } = toRefs(props)
 
     const timelineSvg = ref<HTMLElement | null>(null)
 
@@ -106,15 +140,10 @@ export default defineComponent({
     const isTimelineDragging = ref(false)
     const mousePosition = ref({ x: 0, y: 0 })
     const dragPoint = ref(0)
-    const tracks = ref([] as Array<any>)
 
-    const subMinLength = 0.1
     const rulers = [1, 10, 60, 600, 3600]
     const rulerThreshold = 0.025
 
-    const cursorDisplayTime = computed(() =>
-      roundTime(cursor.value),
-    )
     const timelineWidth = computed(() =>
       timelineSvg.value?.getBoundingClientRect().width || 1440,
     )
@@ -142,6 +171,11 @@ export default defineComponent({
     const density = computed(() =>
       timelineLength.value / timelineWidth.value,
     )
+    const trackNum = computed(() =>
+      tracks.value.length,
+    )
+
+    const trackHeight = 40
 
     onMounted(() => {
       listenPointer()
@@ -175,9 +209,7 @@ export default defineComponent({
     }
     const setSubActive = () => {
       // TODO : OPT ALGO
-      tracks.value.forEach(t => t.data.forEach((sub: any) => {
-        sub.active = isActive(sub, cursor.value)
-      }))
+      tracks.value.forEach(t => t.subs.setActive(cursor.value))
       // Yeah fuck the algo, brutal works la
     }
     const autoScroll = async() => {
@@ -209,8 +241,6 @@ export default defineComponent({
       const secString = sec.toString().padStart(2, '0')
       return hourString + minString + secString
     }
-    const isActive = (sub: any, time: number) =>
-      (time >= sub.start && time < sub.end)
 
     // timeline utilities
     const timelineScrollFix = () => {
@@ -220,8 +250,8 @@ export default defineComponent({
         videoLength.value - timelineLength.value,
       )
     }
-    const getSubWidth = (sub: any) => {
-      const duration = sub.end - sub.start
+    const getSubWidth = (sub: Sub) => {
+      const duration = sub.endTime - sub.startTime
       return timelineWidth.value * duration / timelineLength.value
     }
     const isDragEnabled = (sub: any) => getSubWidth(sub) > 10
@@ -234,16 +264,20 @@ export default defineComponent({
 
     // timeline ruler
     const getRuler = (type: string) => {
-      let ruler = rulers.length - 1
+      let lastRulerIndex = rulers.length - 1
       for (let i = 0; i < rulers.length; i++) {
-        if (density.value <= rulers[i] * rulerThreshold) {
-          ruler = i
+        const thisRuler = rulers[i]
+        if (!thisRuler) throw new Error('Out of range')
+        if (density.value <= thisRuler * rulerThreshold) {
+          lastRulerIndex = i
           break
         }
       }
-      return (type === 'main') ? rulers[ruler]
-           : (type === 'sub') ? (rulers[ruler - 1] || 0.1)
-           : (rulers[ruler] / 2)
+      const lastRuler = rulers[lastRulerIndex]
+      if (!lastRuler) throw new Error('Out of range')
+      return (type === 'main') ? lastRuler
+           : (type === 'sub') ? (rulers[lastRulerIndex - 1] || 0.1)
+           : (lastRuler / 2)
     }
     const getRulerNum = (type: string) =>
       Math.ceil(timelineLength.value / getRuler(type)) + 1
@@ -322,7 +356,8 @@ export default defineComponent({
       timelineScale,
       timelineLeft,
       isTimelineDragging,
-      tracks,
+      trackNum,
+      trackHeight,
       getRulerNum,
       getRulerTime,
       getTimeString,
@@ -333,6 +368,7 @@ export default defineComponent({
       timelineClick,
       setDragPoint,
       moveSubtitle,
+      getSubWidth,
       isDragEnabled,
       getDisplayPositionRatio,
       getDisplayWidthRatio,

@@ -36,4 +36,13 @@ router.put('/infos', auth, async(req, res, _next) => {
   res.status(200).send({ data })
 })
 
+router.delete('/infos', auth, async(req, res, _next) => {
+  const ids = req.query.ids as string[] | undefined
+  if (!ids) return res.sendStatus(400)
+  await Promise.all(ids.map(
+    id => InfoModel.findOneAndDelete({ _id: id }),
+  ))
+  res.sendStatus(200)
+})
+
 export default router

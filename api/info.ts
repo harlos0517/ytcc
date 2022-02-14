@@ -27,3 +27,7 @@ export namespace PutInfos {
   export type Request = (Partial<InfoRequest> & { _id: string })[]
   export type Response = (InfoResponse | null)[]
 }
+
+export namespace DeleteInfos {
+  export type Request = ({ _id: string })[]
+}

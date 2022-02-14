@@ -25,11 +25,16 @@ export const axiosRequest = <Data = undefined, Payload = undefined>(
     _data?: any,
     config?: AxiosRequestConfig,
   ) => axios.get<T, R>(url, config)
+  const unifiedDelete = <T = any, R = AxiosResponse<T>>(
+    url: string,
+    _data?: any,
+    config?: AxiosRequestConfig,
+  ) => axios.delete<T, R>(url, config)
   const axiosMethod =
       method === METHODS.GET ? unifiedGet
     : method === METHODS.POST ? axios.post
     : method === METHODS.PUT ? axios.put
-    : method === METHODS.DELETE ? axios.delete
+    : method === METHODS.DELETE ? unifiedDelete
     : null
   if (axiosMethod === null) throw new Error('No Such Method!')
   const axiosConfig = { ...defaultConfig, ...config }

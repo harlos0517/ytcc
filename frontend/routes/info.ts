@@ -12,3 +12,9 @@ export const newInfos = () =>
 
 export const updateInfos = () =>
   axiosRequest<InfoApi.PutInfos.Response, InfoApi.PutInfos.Request>(METHODS.PUT, '/infos')
+
+export const deleteInfos = (ids: string[]) =>
+  axiosRequest<InfoApi.GetInfos.Response>(
+    METHODS.DELETE,
+    `/infos?${ids.map(id => `ids[]=${id}`).join('&')}`,
+  )
