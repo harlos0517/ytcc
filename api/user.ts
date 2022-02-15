@@ -1,5 +1,6 @@
 export type User = {
-  email: string
+  email: string,
+  google_id?: string,
 }
 
 type UserResponse = User

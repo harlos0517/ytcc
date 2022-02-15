@@ -1,4 +1,5 @@
 import express from 'express'
+import passport from 'passport'
 
 import { UserModel } from '@/schema/user'
 import * as UserApi from '@api/user'
@@ -25,6 +26,18 @@ router.post('/login', async(req, res, _next) => {
     res.status(200).send({ data })
   })
 })
+
+router.post('/login/google', passport.authenticate(
+  'google',
+  { scope: ['profile', 'email'] },
+))
+
+router.get('/login/google/callback',
+  passport.authenticate('google', {
+    successRedirect: 'http://localhost:3000/',
+    failureRedirect: 'http://localhost:3000/login',
+  }),
+)
 
 router.post('/logout', auth, (req, res, _next) => {
   req.logout()

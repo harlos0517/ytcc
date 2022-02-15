@@ -13,6 +13,8 @@
         input(type="password" name="password" v-model="password" required)
       div
         button(@click="login()") LOGIN
+      div: form(action="http://localhost:1233/login/google" method="post")
+        input(type="submit")
     div
       button(@click="refresh()") REFRESH
     div: span SECRET: {{ secret }}
@@ -52,6 +54,13 @@ export default defineComponent({
       })
     }
 
+    const loginGoogle = () => {
+      store.dispatch('user/loginGoogle', {
+        email: email.value,
+        password: password.value,
+      })
+    }
+
     const logout = () => {
       store.dispatch('user/logout')
     }
@@ -63,7 +72,15 @@ export default defineComponent({
     }
 
     return {
-      email, password, secret, userEmail, loggedIn, login, logout, refresh,
+      email,
+      password,
+      secret,
+      userEmail,
+      loggedIn,
+      login,
+      loginGoogle,
+      logout,
+      refresh,
     }
   },
 })

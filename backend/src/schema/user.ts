@@ -10,7 +10,12 @@ import { schemaRequireAll } from '@/util/schema'
 
 export interface UserDoc extends User, PassportLocalDocument {}
 
-const UserSchema = new mongoose.Schema({})
+const UserSchema = new mongoose.Schema({
+  google_id: {
+    type: String,
+    required: false,
+  },
+})
 schemaRequireAll(UserSchema)
 UserSchema.plugin(passportLocalMongoose, {
   usernameField: 'email',

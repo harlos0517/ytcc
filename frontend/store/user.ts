@@ -1,5 +1,5 @@
 import { GetterTree, ActionTree, MutationTree } from 'vuex'
-import { login, logout } from '@/routes/user'
+import { login, loginGoogle, logout } from '@/routes/user'
 
 export type UserState = {
   loggedIn: boolean
@@ -31,6 +31,11 @@ export const actions: ActionTree<UserState, UserState> = {
   login({ commit }, { email, password }) {
     login()({ email, password }).then(_ => {
       commit('setUser', email)
+    }).catch()
+  },
+  loginGoogle({ commit }) {
+    loginGoogle()().then(_ => {
+      // commit('setUser', email)
     }).catch()
   },
   logout({ commit }) {
