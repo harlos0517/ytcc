@@ -303,4 +303,7 @@ export default defineComponent({
   flex: 3 0 0
 #subtitle
   flex: 1 0 0
+
+#subs
+  overflow-y: auto
 </style>
