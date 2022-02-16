@@ -1,7 +1,12 @@
 <template lang="pug">
   .fill-screen.flex-column.bg-dark.text-white
 
-    #top: EditHeader(:triggerHelp="triggerHelp")
+    #top: EditHeader(
+      :triggerHelp="triggerHelp"
+      :downloadSRT="downloadSRT"
+      :uploadSRT="uploadSRT"
+      :importSRT="importSRT"
+    )
 
     #mid.flex-fill.flex-row.position-relative
       #video.flex-column
@@ -98,6 +103,7 @@ import {
 
 import { Sub, Subtitles, SubTrack } from '@/util/subtitle'
 import { getTimeString } from '@/util/time'
+import { exportSRT, parseSRT } from '@/util/srt'
 
 export default defineComponent({
   setup() {
@@ -255,6 +261,39 @@ export default defineComponent({
       update()
     })
 
+    // SRT
+    const downloadSRT = () => {
+      const srt = exportSRT(curSubs.value)
+      // Solution on https://gist.github.com/danallison/3ec9d5314788b337b682
+      const blob = new Blob([srt], { type: 'text/plain' })
+      const ele = document.querySelector('#export') as HTMLAnchorElement
+      ele.download = `Youtube_${videoId}.srt`
+      ele.href = URL.createObjectURL(blob)
+      ele.dataset.downloadurl = ['text/plain', ele.download, ele.href].join(':')
+      ele.click()
+      // setTimeout(function() { URL.revokeObjectURL(ele.href) }, 1500)
+    }
+    const uploadSRT = () => {
+      const ele = document.querySelector('#import') as HTMLElement
+      ele?.click()
+    }
+    const importSRT = async() => {
+      const ele = document.querySelector('#import') as HTMLInputElement
+      if (!ele.files || !ele.files.length) return
+      const srt = await ele.files[0]?.text()
+      const subs = parseSRT(srt)
+      const track = await newTrackRoute()({ videoId })
+      tracks.value.push({ ...track, subs: new Subtitles(subs) })
+      if (!curTrackId.value) curTrackId.value = tracks.value[0]?._id || ''
+      await newInfosRoute()(subs.map(sub => ({
+        ...sub,
+        trackId: curTrackId.value,
+        videoId,
+      })))
+      ele.value = ''
+      infoText.value = 'IMPORTED'
+    }
+
     return {
       youtube,
       video,
@@ -282,6 +321,9 @@ export default defineComponent({
       seek,
       triggerHelp,
       showHelp,
+      downloadSRT,
+      uploadSRT,
+      importSRT,
     }
   },
 })
