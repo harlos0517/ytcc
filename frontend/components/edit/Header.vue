@@ -10,20 +10,17 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from '@nuxtjs/composition-api'
+import { defineComponent, PropType } from '@nuxtjs/composition-api'
 // import { StoreState } from '@/store'
 
 export default defineComponent({
+  props: {
+    triggerHelp: { type: Function as PropType<() => void>, required: true },
+  },
   setup() {
     // const store = useStore() as StoreState
 
-    const showHelp = ref(false)
-
-    const triggerHelp = () => {
-      showHelp.value = !showHelp.value
-    }
-
-    return { showHelp, triggerHelp }
+    return {}
   },
 })
 </script>

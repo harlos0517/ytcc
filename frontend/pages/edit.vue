@@ -1,7 +1,7 @@
 <template lang="pug">
   .fill-screen.flex-column.bg-dark.text-white
 
-    #top: EditHeader
+    #top: EditHeader(:triggerHelp="triggerHelp")
 
     #mid.flex-fill.flex-row.position-relative
       #video.flex-column
@@ -63,6 +63,7 @@
           span.m-0.h2.text-monospace {{ getTimeText(cursor) }}
     #bot.d-flex.flex-row
       span {{ infoText }}
+    EditHelp(v-if='showHelp' :triggerHelp="triggerHelp")
 </template>
 
 <script lang="ts">
@@ -110,7 +111,7 @@ export default defineComponent({
     const state = ref(undefined as PlayerStates | undefined)
     // const curSub = ref(0)
     // const mousePosition = ref({ x: 0, y: 0 })
-    // const showHelp = ref(false)
+    const showHelp = ref(false)
     // const curVersion = ref('1.0.0')
     const infoText = ref('')
     const videoLength = ref(60)
@@ -221,13 +222,16 @@ export default defineComponent({
       if (state.value !== 1) player.value?.playVideo()
       else player.value?.pauseVideo()
     }
+    const triggerHelp = () => {
+      showHelp.value = !showHelp.value
+    }
     const addKeyControl = () => {
       listenKey('Enter', true, addSubtitle)
       listenKey(' ', true, triggerPlay)
       // listenKey('s', true, saveSubtitles)
       // listenKey('e', true, exportSRT)
       // listenKey('i', true, importSRT)
-      // listenKey('h', true, triggerHelp)
+      listenKey('h', true, triggerHelp)
     }
     const tracksInit = async() => {
       video.value = await getVideoByIdRoute(videoId)()
@@ -276,6 +280,8 @@ export default defineComponent({
       addSubtitle,
       deleteInSub,
       seek,
+      triggerHelp,
+      showHelp,
     }
   },
 })
