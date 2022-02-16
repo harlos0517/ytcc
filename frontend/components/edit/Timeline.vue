@@ -37,7 +37,7 @@
             y="32"
             fill="#999999"
             font-size="10px"
-          ) {{ getTimeString(getRulerTime('main', x)) }}
+          ) {{ getRulerText(x) }}
       g.sub-ruler()
         line(
           v-for="x in getRulerNum('sub')"
@@ -116,7 +116,9 @@
 <script lang="ts">
 import { defineComponent, ref, computed, onMounted, toRefs, PropType } from '@nuxtjs/composition-api'
 import { YouTubePlayer } from '@/plugins/vue-youtube'
-import { Sub, SubTrack } from '@/pages/edit.vue'
+
+import { Sub, SubTrack } from '@/util/subtitle'
+import { getTimeString, roundTime } from '@/util/time'
 
 export default defineComponent({
   props: {
@@ -144,9 +146,7 @@ export default defineComponent({
     const rulers = [1, 10, 60, 600, 3600]
     const rulerThreshold = 0.025
 
-    const timelineWidth = computed(() =>
-      timelineSvg.value?.getBoundingClientRect().width || 1440,
-    )
+    const timelineWidth = ref(1440)
     const pointerRatio = computed(() =>
       mousePosition.value.x / timelineWidth.value,
     )
@@ -179,6 +179,7 @@ export default defineComponent({
 
     onMounted(() => {
       listenPointer()
+      onResize()
       update()
     })
 
@@ -195,14 +196,19 @@ export default defineComponent({
       }, true)
       window.addEventListener('mouseup', timelineMapDragEnd)
       window.addEventListener('mousemove', timelineMapDrag)
+      window.addEventListener('resize', onResize)
+    }
+
+    const onResize = () => {
+      timelineWidth.value = timelineSvg.value?.getBoundingClientRect().width || 1440
     }
 
     // update routine
     const update = () => {
-      window.requestAnimationFrame(update)
       updateCursor()
       setSubActive()
       autoScroll()
+      window.requestAnimationFrame(update)
     }
     const updateCursor = async() => {
       cursor.value = await player.value?.getCurrentTime() || 0
@@ -224,22 +230,6 @@ export default defineComponent({
         }
         timelineScrollFix()
       }
-    }
-
-    // time display utilities
-    const roundTime = (time: number) =>
-      Math.round(time * 100) / 100
-
-    const getTimeString = (time: number) => {
-      const rounded = roundTime(time)
-      const hour = Math.floor(rounded / 3600)
-      const min = Math.floor(rounded % 3600 / 60)
-      const sec = Math.floor(rounded % 60)
-      const hourString = videoLength.value > 3600 ? hour.toString() + ':' : ''
-      const minString = (videoLength.value > 3600
-        ? min.toString().padStart(2, '0') : min.toString()) + ':'
-      const secString = sec.toString().padStart(2, '0')
-      return hourString + minString + secString
     }
 
     // timeline utilities
@@ -284,6 +274,9 @@ export default defineComponent({
 
     const getRulerTime = (type: string, x: number) =>
       (Math.floor(timelineStart.value / getRuler(type)) + x - 1) * getRuler(type)
+
+    const getRulerText = (x: number) =>
+      getTimeString(getRulerTime('main', x))
 
     // timeline controls
     const timelineWheel = (e: WheelEvent) => {
@@ -330,7 +323,6 @@ export default defineComponent({
       timelineScrollFix()
     }
 
-
     // subtitle controls
     const moveSubtitle = (_e: Event, sub: any) => {
       sub.dragPoint = sub.dragPoint || roundTime(pointerTime.value)
@@ -360,7 +352,7 @@ export default defineComponent({
       trackHeight,
       getRulerNum,
       getRulerTime,
-      getTimeString,
+      getRulerText,
       timelineMapDrag,
       timelineMapDragPoint,
       timelineMapDragEnd,

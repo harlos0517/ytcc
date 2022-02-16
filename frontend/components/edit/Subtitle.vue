@@ -4,9 +4,9 @@
   )
     .time.mr-2.text-monospace.small(@click="seek(subtitle.startTime)")
       .start-time
-        span {{ getTimeString(subtitle.startTime) }}
+        span {{ timeDisplay(subtitle.startTime) }}
       .end-time
-        span {{ getTimeString(subtitle.endTime) }}
+        span {{ timeDisplay(subtitle.endTime) }}
     textarea.text.p-0.bg-dark.text-white.flex-fill.me-3(
       placeholder="Enter Subtitles Here"
       v-model="subtitle.text"
@@ -28,7 +28,8 @@ import {
   updateInfos as updateInfosRoute,
   deleteInfos as deleteInfosRoute,
 } from '@/routes/info'
-import { Sub } from '@/pages/edit.vue'
+import { Sub } from '@/util/subtitle'
+import { getTimeString } from '@/util/time'
 
 export default defineComponent({
   props: {
@@ -48,27 +49,18 @@ export default defineComponent({
         _id: subtitle.value._id,
       }])
     }
-
     const deleteSubtitle = () => {
       deleteInSub.value(subtitle.value)
       if (!subtitle.value._id) return
       deleteInfosRoute([subtitle.value._id])()
     }
 
-    const getTimeString = (time: number) => {
-      const rounded = Math.round(time * 100) / 100
-      const hour = Math.floor(rounded / 3600)
-      const min = Math.floor(rounded % 3600 / 60)
-      const sec = rounded % 60
-      const hourString = videoLength.value > 3600 ? hour.toString() + ':' : ''
-      const minString = (videoLength.value > 3600
-        ? min.toString().padStart(2, '0') : min.toString()) + ':'
-      const secString = sec.toFixed(2).toString().padStart(5, '0')
-      return hourString + minString + secString
-    }
+    const timeDisplay = (time: number) =>
+      getTimeString(time, videoLength.value > 3600)
+
     onMounted(() => {})
 
-    return { getTimeString, saveSubtitle, deleteSubtitle }
+    return { saveSubtitle, deleteSubtitle, timeDisplay }
   },
 })
 </script>
