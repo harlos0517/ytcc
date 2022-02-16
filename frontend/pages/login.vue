@@ -24,7 +24,7 @@
 import { defineComponent, ref, computed, useStore, onMounted } from '@nuxtjs/composition-api'
 import { StoreState } from '@/store'
 
-import { getMe as getMeRoute, getSecret as getSecretRoute } from '@/routes/user'
+import { getSecret as getSecretRoute } from '@/routes/user'
 
 export default defineComponent({
   setup() {
@@ -38,24 +38,11 @@ export default defineComponent({
     const loggedIn = computed(() => userStore.loggedIn)
 
     onMounted(() => {
-      getMe()
       refresh()
     })
 
-    const getMe = async() => {
-      const { email } = await getMeRoute()()
-      store.commit('user/setUser', email)
-    }
-
     const login = () => {
       store.dispatch('user/login', {
-        email: email.value,
-        password: password.value,
-      })
-    }
-
-    const loginGoogle = () => {
-      store.dispatch('user/loginGoogle', {
         email: email.value,
         password: password.value,
       })
@@ -78,7 +65,6 @@ export default defineComponent({
       userEmail,
       loggedIn,
       login,
-      loginGoogle,
       logout,
       refresh,
     }

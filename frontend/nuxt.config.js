@@ -23,6 +23,8 @@ export default {
     '@/plugins/vue-youtube/index.ts',
   ],
 
+  router: { middleware: ['auth'] },
+
   // Auto import components: https://go.nuxtjs.dev/config-components
   components: true,
 
