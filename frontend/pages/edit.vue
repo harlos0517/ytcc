@@ -241,10 +241,10 @@ export default defineComponent({
         const subs = ret.filter(s => s) as Sub[]
         await newInfosRoute()(
           subs.map(sub => ({
-            video_id: videoId,
-            track_id: curTrackId.value,
-            start_time: sub.startTime,
-            end_time: sub.endTime,
+            videoId,
+            trackId: curTrackId.value,
+            startTime: sub.startTime,
+            endTime: sub.endTime,
             text: sub.text,
           })),
         )
@@ -278,8 +278,8 @@ export default defineComponent({
       tracks.value.forEach(async t => {
         const subs = await getTrackInfosRoute(t._id)()
         t.subs.insertMany(subs.map(sub => ({
-          startTime: sub.start_time,
-          endTime: sub.end_time || 0,
+          startTime: sub.startTime,
+          endTime: sub.endTime || 0,
           text: sub.text,
         })))
       })

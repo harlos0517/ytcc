@@ -8,7 +8,7 @@
       input(type="password" name="password" v-model="password" required)
     div
       span: | Password Again
-      input(type="password" name="password_again" required)
+      input(type="password" name="passwordAgain" required)
     div
       button(@click="register()"): | REGISTER
 </template>

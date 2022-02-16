@@ -2,10 +2,10 @@ import { InfoResponse } from "./info";
 import { InfoStyle } from "./style";
 
 export type Track = {
-  video_id: string
-  user_id: string
+  videoId: string
+  userId: string
   type: string
-  default_style?: InfoStyle
+  defaultStyle?: InfoStyle
 }
 
 export type TrackResponse = Track & { _id: string }

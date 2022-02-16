@@ -1,13 +1,13 @@
 export type User = {
-  email: string,
-  google_id?: string,
+  email: string
+  googleId?: string
 }
 
 type UserResponse = User
 
 export namespace Register {
   export type Request = {
-    email: string,
+    email: string
     password: string
   }
   export type Response = UserResponse
@@ -15,7 +15,7 @@ export namespace Register {
 
 export namespace Login {
   export type Request = {
-    email: string,
+    email: string
     password: string
   }
   export type Response = UserResponse

@@ -8,10 +8,10 @@ import { schemaRequireAll } from '@/util/schema'
 export interface TrackDoc extends Track, Document {}
 
 const TrackSchema = new mongoose.Schema({
-  video_id: ObjectId,
-  user_id: ObjectId,
+  videoId: ObjectId,
+  userId: ObjectId,
   type: String,
-  default_style: {
+  defaultStyle: {
     type: InfoStyleSchema,
     required: false,
   },

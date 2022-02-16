@@ -6,18 +6,18 @@
   - length: number # in seconds
 
 - Track
-  - video_id: Video._id
-  - user_id: User._id
+  - videoId: Video._id
+  - userId: User._id
   - type: string
-  - default_style: Style | null
+  - defaultStyle: Style | null
 
 - Info
-  - video_id: Video._id
-  - track_id: Track._id
-  - user_id: User._id
+  - videoId: Video._id
+  - trackId: Track._id
+  - userId: User._id
   - text: string
-  - start_time: number # in seconds
-  - end_time: number | null # in seconds
+  - startTime: number # in seconds
+  - endTime: number | null # in seconds
   - style: Style | null
 
 - User
@@ -26,7 +26,7 @@
 
 # Types
 - Style
-  - size: numbr # px
+  - size: number # px
   - position:
     - horizontal: number # in percentage
     - vertical: number # in percentage
@@ -39,19 +39,19 @@
 # API
 - /video
   - GET /video?type={type}&handle={handle}
-  - GET /video/:video_id
-  - GET /video/:video_id/tracks
+  - GET /video/:videoId
+  - GET /video/:videoId/tracks
   - POST /video
-  - PUT /video/:video_id
+  - PUT /video/:videoId
 
 - /track
-  - GET /track/:track_id
-  - GET /track/:track_id/infos
+  - GET /track/:trackId
+  - GET /track/:trackId/infos
   - POST /track/
-  - PUT /track/:track_id
+  - PUT /track/:trackId
 
 - /info
-  - GET /infos?ids[]=<info_id>
+  - GET /infos?ids[]=<infoId>
   - POST /infos/
   - PUT /infos/
 
@@ -60,6 +60,6 @@
   - POST /login
   - POST /logout
   - GET /user/me
-  - GET /user/:user_id
+  - GET /user/:userId
   - GET /user/verify?code={code} # verify e-mail
   - PUT /user/password # change password

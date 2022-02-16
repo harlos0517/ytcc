@@ -15,5 +15,5 @@ export const InfoStyleSchema = new mongoose.Schema({
     vertical: Number, // in percentage
   },
   color: String, // #00000000
-  background_color: String, // #00000000
+  backgroundColor: String, // #00000000
 })

@@ -11,7 +11,7 @@ import { schemaRequireAll } from '@/util/schema'
 export interface UserDoc extends User, PassportLocalDocument {}
 
 const UserSchema = new mongoose.Schema({
-  google_id: {
+  googleId: {
     type: String,
     required: false,
   },

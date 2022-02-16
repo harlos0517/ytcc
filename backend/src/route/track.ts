@@ -18,7 +18,7 @@ router.get('/track/:id', auth, async(req, res, _next) => {
 
 router.get('/track/:id/infos', auth, async(req, res, _next) => {
   const trackId = req.params.id
-  const infos = await InfoModel.find({ track_id: trackId })
+  const infos = await InfoModel.find({ trackId })
   const data: TrackApi.GetTrackInfos.Response = infos
   res.status(200).send({ data })
 })
@@ -26,10 +26,10 @@ router.get('/track/:id/infos', auth, async(req, res, _next) => {
 router.post('/track', auth, async(req, res, _next) => {
   const { videoId } = req.body as TrackApi.PostTrack.Request
   const newTrack = await TrackModel.create({
-    video_id: videoId,
-    user_id: req.session.user._id,
+    videoId,
+    userId: req.session.user._id,
     type: 'cc',
-    default_style: null,
+    defaultStyle: null,
   })
   const data: TrackApi.PostTrack.Response = newTrack
   res.status(200).send({ data })

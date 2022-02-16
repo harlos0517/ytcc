@@ -1,16 +1,16 @@
 import { InfoStyle } from "./style";
 
 export type Info = {
-  video_id: string
-  track_id: string
-  user_id: string
+  videoId: string
+  trackId: string
+  userId: string
   text: string
-  start_time: number // in seconds
-  end_time?: number // in seconds
+  startTime: number // in seconds
+  endTime?: number // in seconds
   style?: InfoStyle
 }
 
-export type InfoRequest = Omit<Info, 'user_id'>
+export type InfoRequest = Omit<Info, 'userId'>
 
 export type InfoResponse = Info & { _id: string }
 

@@ -9,5 +9,5 @@ export type InfoStyle = {
     vertical: number
   }
   color: string
-  background_color: string
+  backgroundColor: string
 }
