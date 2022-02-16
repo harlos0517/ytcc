@@ -234,9 +234,8 @@ export default defineComponent({
     const addKeyControl = () => {
       listenKey('Enter', true, addSubtitle)
       listenKey(' ', true, triggerPlay)
-      // listenKey('s', true, saveSubtitles)
-      // listenKey('e', true, exportSRT)
-      // listenKey('i', true, importSRT)
+      listenKey('e', true, downloadSRT)
+      listenKey('i', true, uploadSRT)
       listenKey('h', true, triggerHelp)
     }
     const tracksInit = async() => {
