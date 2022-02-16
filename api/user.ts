@@ -21,6 +21,10 @@ export namespace Login {
   export type Response = UserResponse
 }
 
+export namespace LoginGoogle {
+  export type Response = UserResponse
+}
+
 export namespace Logout {}
 
 export namespace GetMe {

@@ -42,17 +42,16 @@ export default defineComponent({
     const { videoLength, subtitle, deleteInSub } = toRefs(props)
 
     const saveSubtitle = () => {
-      const info = {
+      if (!subtitle.value._id) return
+      updateInfosRoute()([{
+        ...subtitle.value,
         _id: subtitle.value._id,
-        start_time: subtitle.value.startTime,
-        end_time: subtitle.value.endTime,
-        text: subtitle.value.text,
-      }
-      updateInfosRoute()([info])
+      }])
     }
 
     const deleteSubtitle = () => {
       deleteInSub.value(subtitle.value)
+      if (!subtitle.value._id) return
       deleteInfosRoute([subtitle.value._id])()
     }
 

@@ -10,6 +10,8 @@
             ref="youtube"
             :video-id="video ? video.handle : ''"
             resize
+            width="100%"
+            height="100%"
             :resizeDelay="1"
             fitParent
             @playing="onPlaying"
@@ -69,9 +71,10 @@ import {
   onMounted,
   useRoute,
 } from '@nuxtjs/composition-api'
+
 import { Video } from '@api/video'
 import { Track } from '@api/track'
-import { Info } from '@api/info'
+
 import {
   getVideoById as getVideoByIdRoute,
   getVideoTracks as getVideoTracksRoute,
@@ -82,33 +85,35 @@ import {
   newTrack as newTrackRoute,
 } from '@/routes/track'
 
-import { mapStateString, PlayerState, YouTubePlayer } from '@/components/edit/youtube-player'
-
-export type InfoWithId = Info & { _id: string }
+import {
+  mapStateString,
+  PlayerStates,
+  YouTubePlayer,
+} from '@/plugins/vue-youtube'
 
 export type Sub = {
-  _id: string,
+  _id?: string,
   startTime: number,
   endTime: number,
   text: string,
-  next: Sub | null,
-  prev: Sub | null,
+  next?: Sub | null,
+  prev?: Sub | null,
 }
 
 class Subtitles {
   data: Array<Sub>
 
-  constructor(data?: Array<InfoWithId>) {
+  constructor(data?: Array<Sub>) {
     this.data = []
     if (data) this.insertMany(data)
   }
 
-  insertMany(subs: InfoWithId[]) {
-    subs.forEach(this.insert.bind(this))
+  insertMany(subs: Sub[]) {
+    return subs.map(this.insert.bind(this))
   }
 
-  insert(sub: InfoWithId) {
-    const { _id, start_time: startTime, end_time: endTime, text } = sub
+  insert(sub: Sub) {
+    const { _id, startTime, endTime, text } = sub
     if (endTime === undefined) throw new TypeError('Invalid end time.')
     const newSub: Sub = { _id, startTime, endTime, text, next: null, prev: null }
 
@@ -117,22 +122,24 @@ class Subtitles {
     let i = 0
     while (thisSub && thisSub.endTime <= newSub.endTime) {
       prevSub = thisSub
-      thisSub = thisSub.next
+      thisSub = thisSub.next || null
       i++
     }
 
     if (thisSub) newSub.endTime = Math.min(newSub.endTime, thisSub.startTime)
     const start = prevSub ? prevSub.endTime : 0
     newSub.startTime = Math.max(start, newSub.startTime)
-    if (newSub.endTime - newSub.startTime < 0.1)
+    if (newSub.endTime - newSub.startTime < 0.1) {
       // eslint-disable-next-line no-console
-      return console.error('Time segment too small.')
-
+      console.error('Time segment too small.')
+      return null
+    }
     newSub.next = thisSub
     newSub.prev = prevSub
     if (prevSub) prevSub.next = newSub
     if (thisSub) thisSub.prev = newSub
     this.data.splice(i, 0, newSub)
+    return newSub
   }
 
   delete(sub: Sub) {
@@ -161,7 +168,7 @@ export default defineComponent({
 
     const youtube = ref<HTMLElement & { player: YouTubePlayer } | null>(null)
     const player = computed(() => youtube.value?.player)
-    const state = ref(undefined as PlayerState | undefined)
+    const state = ref(undefined as PlayerStates | undefined)
     // const curSub = ref(0)
     // const mousePosition = ref({ x: 0, y: 0 })
     // const showHelp = ref(false)
@@ -183,24 +190,24 @@ export default defineComponent({
       infoText.value = mapStateString(state.value)
     }
     const onPlaying = (e: CustomEvent | any) => {
-      state.value = PlayerState.PLAYING
+      state.value = PlayerStates.PLAYING
       infoText.value = mapStateString(state.value)
     }
     const onPaused = (e: CustomEvent | any) => {
-      state.value = PlayerState.PAUSED
+      state.value = PlayerStates.PAUSED
       infoText.value = mapStateString(state.value)
     }
     const onEnded = (e: CustomEvent | any) => {
-      state.value = PlayerState.ENDED
+      state.value = PlayerStates.ENDED
       infoText.value = mapStateString(state.value)
     }
     const onBuffering = (e: CustomEvent | any) => {
-      state.value = PlayerState.BUFFERING
+      state.value = PlayerStates.BUFFERING
       infoText.value = mapStateString(state.value)
     }
     const onCued = async(e: CustomEvent | any) => {
       videoLength.value = await player.value?.getDuration() || 60
-      state.value = PlayerState.VIDEO_CUED
+      state.value = PlayerStates.VIDEO_CUED
       infoText.value = mapStateString(state.value)
     }
 
@@ -224,15 +231,23 @@ export default defineComponent({
     }
     const addSubtitle = async() => {
       if (!curTrack.value) return
-      const infos = await newInfosRoute()([{
-        video_id: videoId,
-        track_id: curTrack.value._id,
+      const infos = [{
         text: '',
-        start_time: Math.max(0, cursor.value - 1),
-        end_time: cursor.value,
-      }])
+        startTime: Math.max(0, cursor.value - 1),
+        endTime: cursor.value,
+      }]
       if (curTrack.value.subs) {
-        curTrack.value.subs.insertMany(infos)
+        const ret = curTrack.value.subs.insertMany(infos)
+        const subs = ret.filter(s => s) as Sub[]
+        await newInfosRoute()(
+          subs.map(sub => ({
+            video_id: videoId,
+            track_id: curTrackId.value,
+            start_time: sub.startTime,
+            end_time: sub.endTime,
+            text: sub.text,
+          })),
+        )
       } else {
         curTrack.value.subs = new Subtitles(infos)
       }
@@ -262,7 +277,11 @@ export default defineComponent({
       curTrackId.value = tracks.value[0]?._id || ''
       tracks.value.forEach(async t => {
         const subs = await getTrackInfosRoute(t._id)()
-        t.subs.insertMany(subs)
+        t.subs.insertMany(subs.map(sub => ({
+          startTime: sub.start_time,
+          endTime: sub.end_time || 0,
+          text: sub.text,
+        })))
       })
       update()
     })
@@ -297,8 +316,6 @@ export default defineComponent({
 </script>
 
 <style lang="sass" scoped>
-@import '@/global.sass'
-
 #video
   flex: 3 0 0
 #subtitle

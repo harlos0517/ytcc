@@ -1,4 +1,5 @@
 export default {
+  mode: 'spa',
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
     title: 'ytcc-frontend',
@@ -19,7 +20,7 @@ export default {
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
-    '@/plugins/vue-youtube',
+    '@/plugins/vue-youtube/index.ts',
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
@@ -30,7 +31,12 @@ export default {
     // https://go.nuxtjs.dev/typescript
     '@nuxt/typescript-build',
     '@nuxtjs/composition-api/module',
+    '@nuxtjs/style-resources',
   ],
+
+  styleResources: {
+    sass: ['./assets/styles/*.sass'],
+  },
 
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [

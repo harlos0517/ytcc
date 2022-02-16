@@ -115,7 +115,7 @@
 
 <script lang="ts">
 import { defineComponent, ref, computed, onMounted, toRefs, PropType } from '@nuxtjs/composition-api'
-import { YouTubePlayer } from './youtube-player'
+import { YouTubePlayer } from '@/plugins/vue-youtube'
 import { Sub, SubTrack } from '@/pages/edit.vue'
 
 export default defineComponent({

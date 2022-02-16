@@ -1,4 +1,4 @@
-export enum PlayerState {
+export enum PlayerStates {
   BUFFERING = 3,
   ENDED = 0,
   PAUSED = 2,
@@ -16,13 +16,13 @@ export enum PlayerStateString {
   VIDEO_CUED = 'Cued',
 }
 
-export const mapStateString = (state?: PlayerState) =>
-    state === PlayerState.BUFFERING ? PlayerStateString.BUFFERING
-  : state === PlayerState.ENDED ? PlayerStateString.ENDED
-  : state === PlayerState.PAUSED ? PlayerStateString.PAUSED
-  : state === PlayerState.PLAYING ? PlayerStateString.PLAYING
-  : state === PlayerState.UNSTARTED ? PlayerStateString.UNSTARTED
-  : state === PlayerState.VIDEO_CUED ? PlayerStateString.VIDEO_CUED : ''
+export const mapStateString = (state?: PlayerStates) =>
+    state === PlayerStates.BUFFERING ? PlayerStateString.BUFFERING
+  : state === PlayerStates.ENDED ? PlayerStateString.ENDED
+  : state === PlayerStates.PAUSED ? PlayerStateString.PAUSED
+  : state === PlayerStates.PLAYING ? PlayerStateString.PLAYING
+  : state === PlayerStates.UNSTARTED ? PlayerStateString.UNSTARTED
+  : state === PlayerStates.VIDEO_CUED ? PlayerStateString.VIDEO_CUED : ''
 
 type EventType =
   'ready' |
@@ -79,7 +79,7 @@ export interface YouTubePlayer {
     getPlaylistIndex(): number;
     getPlaybackQuality(): string;
     getPlaybackRate(): number;
-    getPlayerState(): PlayerState;
+    getPlayerState(): PlayerStates;
     getVideoEmbedCode(): string;
     getVideoLoadedFraction(): number;
     getVideoUrl(): string;
