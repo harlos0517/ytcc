@@ -228,6 +228,7 @@ export default defineComponent({
     const newTrack = async() => {
       const track = await newTrackRoute()({ videoId })
       tracks.value.push({ ...track, subs: new Subtitles() })
+      if (!curTrackId.value) curTrackId.value = tracks.value[0]?._id || ''
     }
     const addSubtitle = async() => {
       if (!curTrack.value) return
@@ -270,7 +271,30 @@ export default defineComponent({
       cursor.value = await player.value?.getCurrentTime() || 0
     }
 
-    onMounted(async() => {
+    const triggerPlay = () => {
+      if (state.value !== 1) player.value?.playVideo()
+      else player.value?.pauseVideo()
+    }
+
+    const addKeyControl = () => {
+      listenKey('Enter', true, addSubtitle)
+      listenKey(' ', true, triggerPlay)
+      // listenKey('s', true, saveSubtitles)
+      // listenKey('e', true, exportSRT)
+      // listenKey('i', true, importSRT)
+      // listenKey('h', true, triggerHelp)
+    }
+
+    const listenKey = (key: string, ctrl: Boolean, f: Function) => {
+      window.addEventListener('keydown', e => {
+        if (e.key !== key) return
+        if (ctrl !== e.ctrlKey) return
+        e.preventDefault()
+        f()
+      })
+    }
+
+    const tracksInit = async() => {
       video.value = await getVideoByIdRoute(videoId)()
       const newTracks = await getVideoTracksRoute(videoId)()
       tracks.value = newTracks.map(t => ({ ...t, subs: new Subtitles() }))
@@ -283,6 +307,11 @@ export default defineComponent({
           text: sub.text,
         })))
       })
+    }
+
+    onMounted(() => {
+      tracksInit()
+      addKeyControl()
       update()
     })
 
