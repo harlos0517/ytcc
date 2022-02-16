@@ -15,7 +15,7 @@ router.post('/register', (req, res, _next) => {
     else res.sendStatus(200)
   })
 })
-
+/*
 router.post('/login', async(req, res, _next) => {
   const { email, password } = req.body as UserApi.Login.Request
   const { error, user } = await UserModel.authenticate()(email, password)
@@ -26,7 +26,7 @@ router.post('/login', async(req, res, _next) => {
     res.status(200).send({ data })
   })
 })
-
+*/
 router.post('/login/google', passport.authenticate(
   'google',
   { scope: ['profile', 'email'] },
