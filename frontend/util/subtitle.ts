@@ -7,6 +7,8 @@ export type Sub = {
   text: string,
   next?: Sub | null,
   prev?: Sub | null,
+  dragPoint?: number,
+  active?: boolean,
 }
 
 export class Subtitles {
@@ -24,7 +26,15 @@ export class Subtitles {
   insert(sub: Sub) {
     const { _id, startTime, endTime, text } = sub
     if (endTime === undefined) throw new TypeError('Invalid end time.')
-    const newSub: Sub = { _id, startTime, endTime, text, next: null, prev: null }
+    const newSub: Sub = {
+      _id,
+      startTime,
+      endTime,
+      text,
+      next: null,
+      prev: null,
+      active: false,
+    }
 
     let prevSub: Sub | null = null
     let thisSub: Sub | null = this.data[0] || null
@@ -60,8 +70,8 @@ export class Subtitles {
   }
 
   setActive(time: number) {
-    this.data.forEach((sub: any) => {
-      sub.active = (time >= sub.start && time < sub.end)
+    this.data.forEach(sub => {
+      sub.active = (time >= sub.startTime && time < sub.endTime)
     })
   }
 }

@@ -1,6 +1,6 @@
 <template lang="pug">
   .my-1.p-2.d-flex.flex-row.align-items-center.rounded(
-    :class="{'bg-secondary': true}"
+    :class="{'bg-secondary': subtitle.active}"
   )
     .time.mr-2.text-monospace.small(@click="seek(subtitle.startTime)")
       .start-time
@@ -45,8 +45,10 @@ export default defineComponent({
     const saveSubtitle = () => {
       if (!subtitle.value._id) return
       updateInfosRoute()([{
-        ...subtitle.value,
         _id: subtitle.value._id,
+        startTime: subtitle.value.startTime,
+        endTime: subtitle.value.endTime,
+        text: subtitle.value.text,
       }])
     }
     const deleteSubtitle = () => {

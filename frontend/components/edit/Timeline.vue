@@ -1,15 +1,16 @@
 <template lang="pug">
   svg#timeline-map-svg(
     width="100%"
-    :height="40 + trackHeight * trackNum"
+    :height="timelineHeight"
     ref="timelineSvg"
+    @wheel="timelineWheel"
   )
     g#timeline-bg
       rect(
         x="0"
-        y="8"
+        :y="scrollbarHeight"
         width="100%"
-        :height="32 + trackHeight * trackNum"
+        :height="timelineHeight - scrollbarHeight"
         fill="#000000"
       )
     g#timeline-map-timeline-scroll
@@ -17,100 +18,100 @@
         :x="timelineStart / timelineLength / timelineScale * 100 + '%'"
         y="0"
         :width="(1 / timelineScale) * 100 + '%'"
-        height="8"
+        :height="scrollbarHeight"
         rx="4"
         fill="#FFFFFF88"
         @mousedown="timelineMapDragPoint"
       )
     g#ruler
       g.main-ruler
-        g(v-for="x in getRulerNum('main')")
+        template(v-for="x in getRulerNum()")
           line(
-            :x1="getDisplayPositionRatio(getRulerTime('main', x)) + '%'"
-            y1="8"
-            :x2="getDisplayPositionRatio(getRulerTime('main', x)) + '%'"
-            y2="24"
+            :x1="getDisplayPosition(getRulerTime(x))"
+            :y1="scrollbarHeight"
+            :x2="getDisplayPosition(getRulerTime(x))"
+            :y2="scrollbarHeight + getRulerLineHeight(x)"
             stroke="#0DCAF0"
           )
           text.text-monospace(
-            :x="`${getDisplayPositionRatio(getRulerTime('main', x)) + 0.5}%`"
-            y="32"
+            v-if="getRulerType(x) === 'main'"
+            :x="getDisplayPosition(getRulerTime(x)) + 5"
+            :y="scrollbarHeight + rulerTextOffset"
             fill="#999999"
             font-size="10px"
           ) {{ getRulerText(x) }}
-      g.sub-ruler()
-        line(
-          v-for="x in getRulerNum('sub')"
-          :x1="getDisplayPositionRatio(getRulerTime('sub', x)) + '%'"
-          y1="8"
-          :x2="getDisplayPositionRatio(getRulerTime('sub', x)) + '%'"
-          y2="14"
-          stroke="#0DCAF0"
-        )
-      g.sub2-ruler()
-        line(
-          v-for="x in getRulerNum('sub2')"
-          :x1="getDisplayPositionRatio(getRulerTime('sub2', x)) + '%'"
-          y1="8"
-          :x2="getDisplayPositionRatio(getRulerTime('sub2', x)) + '%'"
-          y2="18"
-          stroke="#0DCAF0"
-        )
     g#timeline-subs
       g.timeline-track(
         v-for="(t, i) in tracks"
         :fill="t._id === curTrackId ? '#FFFFFF22' : '#00000000'"
         :style="{ opacity: t._id === curTrackId ? 1 : .5 }"
-        @click="curTrackId = t._id"
       )
         g.position-absolute.timeline-sub.rounded.h-100(
           v-for="sub in t.subs.data"
         )
           rect(
-            :x="getDisplayPositionRatio(sub.startTime) + '%'"
-            :y="40 + trackHeight * i"
+            :x="getDisplayPosition(sub.startTime)"
+            :y="scrollbarHeight + rulerSpaceHeight + trackHeight * i"
             rx="4"
             :width="getSubWidth(sub)"
-            height="40"
+            :height="trackHeight"
             fill="#FFFFFF88"
             stroke="#FFFFFF"
             stroke-width="0.5px"
           )
-          //- rect.position-absolute.move-target(
-          //-   draggable="true"
-          //-   @drag="moveSubtitle($event, sub)"
-          //-   @dragstart="setDragPoint(sub)"
-          //-   @dragend="saveSubtitles"
-          //- )
-          //- rect.drag.drag-start.position-absolute(
-          //-   draggable="true"
-          //-   :class="{ 'd-none': !isDragEnabled(sub) }"
-          //-   @drag="dragSubtitle(sub, 'start')"
-          //-   @dragend="saveSubtitles"
-          //- )
-          //- rect.drag.drag-end.position-absolute(
-          //-   draggable="true"
-          //-   :class="{ 'd-none': !isDragEnabled(sub) }"
-          //-   @drag="dragSubtitle(sub, 'end')"
-          //-   @dragend="saveSubtitles"
-          //- )
     line#cursor(
-      :x1="getDisplayPositionRatio(cursor) + '%'"
-      y1="8"
-      :x2="getDisplayPositionRatio(cursor) + '%'"
-      :y2="40 + trackHeight * trackNum"
+      :x1="getDisplayPosition(cursor)"
+      :y1="scrollbarHeight"
+      :x2="getDisplayPosition(cursor)"
+      :y2="timelineHeight"
       stroke="#FF0000"
     )
     g#timeline-box
       rect(
         x="0"
-        y="8"
+        :y="scrollbarHeight"
         width="100%"
-        :height="32 + 40 * trackNum"
+        :height="timelineHeight"
         fill="#00000000"
         @click="timelineClick"
-        @wheel="timelineWheel"
       )
+    g#timeline-subs-control(
+      fill="#00000000"
+    )
+      g.timeline-track(
+        v-for="(t, i) in tracks"
+        @click="changeTrack(t._id)"
+      )
+        g.position-absolute.timeline-sub.rounded.h-100(
+          v-for="sub in t.subs.data"
+        )
+          rect.move-target(
+            :x="getDisplayPosition(sub.startTime)"
+            :y="scrollbarHeight + rulerSpaceHeight + trackHeight * i"
+            rx="4"
+            :width="getSubWidth(sub)"
+            :height="trackHeight"
+            :class="{ 'd-none': !isMoveEnabled(sub) }"
+            @mousedown="subDragPoint(sub, 'move')"
+          )
+          rect.drag.drag-start(
+            :x="getDisplayPosition(sub.startTime)"
+            :y="scrollbarHeight + rulerSpaceHeight + trackHeight * i"
+            rx="4"
+            :width="10"
+            :height="trackHeight"
+            :class="{ 'd-none': !isDragEnabled(sub) }"
+            @mousedown="subDragPoint(sub, 'start')"
+          )
+          rect.drag.drag-end(
+            :x="getDisplayPosition(sub.endTime) - 10"
+            :y="scrollbarHeight + rulerSpaceHeight + trackHeight * i"
+            rx="4"
+            :width="10"
+            :height="trackHeight"
+            :class="{ 'd-none': !isDragEnabled(sub) }"
+            @mousedown="subDragPoint(sub, 'end')"
+          )
 </template>
 
 <script lang="ts">
@@ -130,22 +131,46 @@ export default defineComponent({
       default: [] as SubTrack[],
     },
     curTrackId: { type: String, default: '' },
+    changeTrack: {
+      type: Function as PropType<(id: string) => void>,
+      required: true,
+    },
   },
   setup(props) {
     const { videoLength, player, tracks } = toRefs(props)
 
-    const timelineSvg = ref<HTMLElement | null>(null)
+    const maxScale = computed(() =>
+      videoLength.value / 2,
+    )
+    const trackNum = computed(() =>
+      tracks.value.length,
+    )
 
+    // pointer
     const cursor = ref(0)
+    const mousePosition = ref({ x: 0, y: 0 })
+    const dragPoint = ref(0)
+    const pointerTime = computed(() =>
+      timelineStart.value + pointerRatio.value * timelineLength.value,
+    )
+    const isCursorInView = computed(() =>
+      cursor.value > timelineStart.value && cursor.value < timelineEnd.value,
+    )
+
+    // timeline layout
+    const trackHeight = 32
+    const scrollbarHeight = 8
+    const rulerSpaceHeight = 24
+    const rulerTextOffset = 20
+    const timelineHeight = computed(() =>
+      scrollbarHeight + rulerSpaceHeight + trackHeight * trackNum.value,
+    )
+
+    // timeline
+    const timelineSvg = ref<HTMLElement | null>(null)
     const timelineStart = ref(0)
     const timelineScale = ref(1)
     const isTimelineDragging = ref(false)
-    const mousePosition = ref({ x: 0, y: 0 })
-    const dragPoint = ref(0)
-
-    const rulers = [1, 10, 60, 600, 3600]
-    const rulerThreshold = 0.025
-
     const timelineWidth = ref(1440)
     const pointerRatio = computed(() =>
       mousePosition.value.x / timelineWidth.value,
@@ -156,83 +181,10 @@ export default defineComponent({
     const timelineEnd = computed(() =>
       timelineStart.value + timelineLength.value,
     )
-    const pointerTime = computed(() =>
-      timelineStart.value + pointerRatio.value * timelineLength.value,
-    )
-    const timelineLeft = computed(() =>
-      0 - timelineStart.value / timelineLength.value,
-    )
-    const maxScale = computed(() =>
-      videoLength.value / 2,
-    )
-    const isCursorInView = computed(() =>
-      cursor.value > timelineStart.value && cursor.value < timelineEnd.value,
-    )
     const density = computed(() =>
       timelineLength.value / timelineWidth.value,
     )
-    const trackNum = computed(() =>
-      tracks.value.length,
-    )
 
-    const trackHeight = 40
-
-    onMounted(() => {
-      listenPointer()
-      onResize()
-      update()
-    })
-
-    // events
-    const listenPointer = () => {
-      window.addEventListener('mousemove', e => {
-        mousePosition.value.x = e.x
-        mousePosition.value.y = e.y
-      }, true)
-      window.addEventListener('drag', e => {
-        if (!e.x && !e.y) return
-        mousePosition.value.x = e.x
-        mousePosition.value.y = e.y
-      }, true)
-      window.addEventListener('mouseup', timelineMapDragEnd)
-      window.addEventListener('mousemove', timelineMapDrag)
-      window.addEventListener('resize', onResize)
-    }
-
-    const onResize = () => {
-      timelineWidth.value = timelineSvg.value?.getBoundingClientRect().width || 1440
-    }
-
-    // update routine
-    const update = () => {
-      updateCursor()
-      setSubActive()
-      autoScroll()
-      window.requestAnimationFrame(update)
-    }
-    const updateCursor = async() => {
-      cursor.value = await player.value?.getCurrentTime() || 0
-    }
-    const setSubActive = () => {
-      // TODO : OPT ALGO
-      tracks.value.forEach(t => t.subs.setActive(cursor.value))
-      // Yeah fuck the algo, brutal works la
-    }
-    const autoScroll = async() => {
-      if (player.value && await player.value.getPlayerState() === 1) {
-        const ratio = 0.9
-        if (!isCursorInView.value)
-          timelineStart.value = cursor.value - timelineLength.value * (1 - ratio)
-        else if (cursor.value > timelineStart.value + timelineLength.value * ratio) {
-          const newTimelineStart = cursor.value - timelineLength.value * ratio
-          if (newTimelineStart + timelineLength.value < videoLength.value)
-            timelineStart.value = newTimelineStart
-        }
-        timelineScrollFix()
-      }
-    }
-
-    // timeline utilities
     const timelineScrollFix = () => {
       timelineStart.value = Math.max(timelineStart.value, 0)
       timelineStart.value = Math.min(
@@ -244,41 +196,14 @@ export default defineComponent({
       const duration = sub.endTime - sub.startTime
       return timelineWidth.value * duration / timelineLength.value
     }
-    const isDragEnabled = (sub: any) => getSubWidth(sub) > 10
+    const isDragEnabled = (sub: any) => getSubWidth(sub) > 20
 
-    const getDisplayPositionRatio = (time: number) =>
-      (time - timelineStart.value) / timelineLength.value * 100
+    const isMoveEnabled = (sub: any) => getSubWidth(sub) > 10
 
-    const getDisplayWidthRatio = (time: number) =>
-      time / timelineLength.value * 100
+    const getDisplayPosition = (time: number) =>
+      (time - timelineStart.value) / timelineLength.value * timelineWidth.value
 
-    // timeline ruler
-    const getRuler = (type: string) => {
-      let lastRulerIndex = rulers.length - 1
-      for (let i = 0; i < rulers.length; i++) {
-        const thisRuler = rulers[i]
-        if (!thisRuler) throw new Error('Out of range')
-        if (density.value <= thisRuler * rulerThreshold) {
-          lastRulerIndex = i
-          break
-        }
-      }
-      const lastRuler = rulers[lastRulerIndex]
-      if (!lastRuler) throw new Error('Out of range')
-      return (type === 'main') ? lastRuler
-           : (type === 'sub') ? (rulers[lastRulerIndex - 1] || 0.1)
-           : (lastRuler / 2)
-    }
-    const getRulerNum = (type: string) =>
-      Math.ceil(timelineLength.value / getRuler(type)) + 1
-
-    const getRulerTime = (type: string, x: number) =>
-      (Math.floor(timelineStart.value / getRuler(type)) + x - 1) * getRuler(type)
-
-    const getRulerText = (x: number) =>
-      getTimeString(getRulerTime('main', x))
-
-    // timeline controls
+    // timeline events
     const timelineWheel = (e: WheelEvent) => {
       e.preventDefault()
       if (e.ctrlKey) {
@@ -323,50 +248,196 @@ export default defineComponent({
       timelineScrollFix()
     }
 
+    // rulers
+    const rulers = [1, 10, 60, 600, 3600]
+    const rulerThreshold = 0.02
+    const rulerLineHeight = [16, 10, 6]
+    const getRuler = () => {
+      let lastRulerIndex = rulers.length - 1
+      for (let i = 0; i < rulers.length; i++) {
+        const thisRuler = rulers[i]
+        if (!thisRuler) throw new Error('Out of range')
+        if (density.value <= thisRuler * rulerThreshold) {
+          lastRulerIndex = i
+          break
+        }
+      }
+      const lastRuler = rulers[lastRulerIndex]
+      if (!lastRuler) throw new Error('Out of range')
+      return {
+        main: lastRuler,
+        half: lastRuler / 2,
+        sub: rulers[lastRulerIndex - 1] || 0.1,
+      }
+    }
+
+    const getRulerNum = () =>
+      Math.ceil(timelineLength.value / getRuler().sub) + 1
+
+    const getRulerTime = (x: number) => {
+      const { sub } = getRuler()
+      return (Math.floor(timelineStart.value / sub) + x - 1) * sub
+    }
+    const getRulerType = (x: number) => {
+      const time = getRulerTime(x)
+      const { main, half } = getRuler()
+      if (time % main === 0) return 'main'
+      if (time % half === 0) return 'half'
+      return 'sub'
+    }
+    const getRulerLineHeight = (x: number) => {
+      const type = getRulerType(x)
+      if (type === 'main') return rulerLineHeight[0]
+      if (type === 'half') return rulerLineHeight[1]
+      return rulerLineHeight[2]
+    }
+    const getRulerText = (x: number) =>
+      getTimeString(getRulerTime(x), videoLength.value > 3600, false)
+
     // subtitle controls
-    const moveSubtitle = (_e: Event, sub: any) => {
+    const draggingSub = ref<Sub | null>(null)
+    const draggingType = ref('')
+    const dragSubtitle = () => {
+      const sub = draggingSub.value
+      const pos = draggingType.value
+      if (!sub || (pos !== 'start' && pos !== 'end')) return
+      sub.dragPoint = sub.dragPoint || roundTime(pointerTime.value)
+      const min = (pos === 'start')
+        ? (sub.prev ? sub.prev.endTime : 0) - sub.startTime
+        : (sub.startTime + 0.1 - sub.endTime)
+      const max = (pos === 'start')
+        ? (sub.endTime - 0.1 - sub.startTime)
+        : (sub.next ? sub.next.startTime : videoLength.value) - sub.endTime
+      let time = roundTime(pointerTime.value - sub.dragPoint)
+      time = Math.max(min, time)
+      time = Math.min(max, time)
+      time = roundTime(time)
+      sub.dragPoint = roundTime(sub.dragPoint + time)
+      if (pos === 'start') sub.startTime += time
+      if (pos === 'end') sub.endTime += time
+    }
+    const moveSubtitle = () => {
+      const sub = draggingSub.value
+      const pos = draggingType.value
+      if (!sub || pos !== 'move') return
       sub.dragPoint = sub.dragPoint || roundTime(pointerTime.value)
       let dt = roundTime(pointerTime.value - sub.dragPoint)
-      const min = (sub.prev ? sub.prev.end : 0) - sub.start
-      const max = (sub.next ? sub.next.start : videoLength.value) - sub.end
+      const min = (sub.prev ? sub.prev.endTime : 0) - sub.startTime
+      const max = (sub.next ? sub.next.startTime : videoLength.value) - sub.endTime
       dt = Math.max(min, dt)
       dt = Math.min(max, dt)
       dt = roundTime(dt)
       sub.dragPoint = roundTime(sub.dragPoint + dt)
-      sub.start = roundTime(sub.start + dt)
-      sub.end = roundTime(sub.end + dt)
+      sub.startTime = roundTime(sub.startTime + dt)
+      sub.endTime = roundTime(sub.endTime + dt)
     }
-    const setDragPoint = (sub: any) => {
+    const subDragPoint = (sub: any, type: string) => {
+      draggingSub.value = sub
+      draggingType.value = type
       sub.dragPoint = roundTime(pointerTime.value)
     }
+    const subDragEnd = () => {
+      draggingSub.value = null
+      draggingType.value = ''
+    }
+
+    // update routine
+    const update = () => {
+      updateCursor()
+      setSubActive()
+      autoScroll()
+      window.requestAnimationFrame(update)
+    }
+    const updateCursor = async() => {
+      cursor.value = await player.value?.getCurrentTime() || 0
+    }
+    const setSubActive = () => {
+      // TODO : OPT ALGO
+      tracks.value.forEach(t => t.subs.setActive(cursor.value))
+      // Yeah fuck the algo, brutal works la
+    }
+    const autoScroll = async() => {
+      if (player.value && await player.value.getPlayerState() === 1) {
+        const ratio = 0.9
+        if (!isCursorInView.value)
+          timelineStart.value = cursor.value - timelineLength.value * (1 - ratio)
+        else if (cursor.value > timelineStart.value + timelineLength.value * ratio) {
+          const newTimelineStart = cursor.value - timelineLength.value * ratio
+          if (newTimelineStart + timelineLength.value < videoLength.value)
+            timelineStart.value = newTimelineStart
+        }
+        timelineScrollFix()
+      }
+    }
+
+    // on mounted
+    const listenPointer = () => {
+      window.addEventListener('mousemove', e => {
+        mousePosition.value.x = e.x
+        mousePosition.value.y = e.y
+      }, true)
+      window.addEventListener('drag', e => {
+        if (!e.x && !e.y) return
+        mousePosition.value.x = e.x
+        mousePosition.value.y = e.y
+      }, true)
+      window.addEventListener('mouseup', timelineMapDragEnd)
+      window.addEventListener('mouseup', subDragEnd)
+      window.addEventListener('mousemove', timelineMapDrag)
+      window.addEventListener('mousemove', moveSubtitle)
+      window.addEventListener('mousemove', dragSubtitle)
+    }
+    const onResize = () => {
+      timelineWidth.value = timelineSvg.value?.getBoundingClientRect().width || 1440
+    }
+
+    onMounted(() => {
+      listenPointer()
+      window.addEventListener('resize', onResize)
+      onResize()
+      update()
+    })
 
     return {
-      timelineSvg,
+      trackNum,
+
       cursor,
+
+      trackHeight,
+      scrollbarHeight,
+      rulerSpaceHeight,
+      rulerTextOffset,
+      timelineHeight,
+
+      timelineSvg,
       timelineStart,
       timelineLength,
       timelineScale,
-      timelineLeft,
-      isTimelineDragging,
-      trackNum,
-      trackHeight,
-      getRulerNum,
-      getRulerTime,
-      getRulerText,
-      timelineMapDrag,
-      timelineMapDragPoint,
-      timelineMapDragEnd,
+
       timelineWheel,
       timelineClick,
-      setDragPoint,
-      moveSubtitle,
+      timelineMapDragPoint,
+
+      getRulerNum,
+      getRulerTime,
+      getRulerType,
+      getRulerLineHeight,
+      getRulerText,
+
       getSubWidth,
       isDragEnabled,
-      getDisplayPositionRatio,
-      getDisplayWidthRatio,
+      isMoveEnabled,
+      getDisplayPosition,
+
+      subDragPoint,
     }
   },
 })
 </script>
 
-<style lang="sass" scoped></style>
+<style lang="sass" scoped>
+.move-target
+  cursor: move
+.drag
+  cursor: ew-resize
+</style>

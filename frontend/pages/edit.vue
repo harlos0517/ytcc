@@ -22,11 +22,15 @@
             @cued="onCued"
           )
           #video-subs.w-100.position-absolute.text-center.h3
+            div(v-for="t in tracks")
+              div(v-for="sub in t.subs.data.filter(x=>x.active).reverse()")
+                | {{ sub.text }}
         EditTimeline(
           :videoLength="videoLength"
           :player="player"
           :tracks="tracks"
           :curTrackId="curTrackId"
+          :changeTrack="changeTrack"
         )
       #subtitle.flex-column.px-2
         #tracks
@@ -87,6 +91,7 @@ import {
 import {
   mapStateString,
   PlayerStates,
+  PlayerStateString,
   YouTubePlayer,
 } from '@/plugins/vue-youtube'
 
@@ -118,6 +123,11 @@ export default defineComponent({
     )
     const curSubs = computed(() => curTrack.value?.subs.data || [])
 
+    const changeTrack = (id: string) => {
+      curTrackId.value = id
+    }
+
+    // player events
     const onReady = async(e: CustomEvent | any) => {
       state.value = await player.value?.getPlayerState()
       videoLength.value = await player.value?.getDuration() || 60
@@ -125,36 +135,38 @@ export default defineComponent({
     }
     const onPlaying = (e: CustomEvent | any) => {
       state.value = PlayerStates.PLAYING
-      infoText.value = mapStateString(state.value)
+      infoText.value = PlayerStateString.PLAYING
     }
     const onPaused = (e: CustomEvent | any) => {
       state.value = PlayerStates.PAUSED
-      infoText.value = mapStateString(state.value)
+      infoText.value = PlayerStateString.PAUSED
     }
     const onEnded = (e: CustomEvent | any) => {
       state.value = PlayerStates.ENDED
-      infoText.value = mapStateString(state.value)
+      infoText.value = PlayerStateString.ENDED
     }
     const onBuffering = (e: CustomEvent | any) => {
       state.value = PlayerStates.BUFFERING
-      infoText.value = mapStateString(state.value)
+      infoText.value = PlayerStateString.BUFFERING
     }
     const onCued = async(e: CustomEvent | any) => {
       videoLength.value = await player.value?.getDuration() || 60
       state.value = PlayerStates.VIDEO_CUED
-      infoText.value = mapStateString(state.value)
+      infoText.value = PlayerStateString.VIDEO_CUED
     }
 
+    // display function
     const getTimeText = (time: number) =>
       getTimeString(time, videoLength.value > 3600)
 
-    const deleteTrack = () => {}
-
+    // track operation
     const newTrack = async() => {
       const track = await newTrackRoute()({ videoId })
       tracks.value.push({ ...track, subs: new Subtitles() })
       if (!curTrackId.value) curTrackId.value = tracks.value[0]?._id || ''
     }
+    const deleteTrack = () => {}
+
     const addSubtitle = async() => {
       if (!curTrack.value) return
       const infos = [{
@@ -178,38 +190,25 @@ export default defineComponent({
         curTrack.value.subs = new Subtitles(infos)
       }
     }
+
+    // passing function to children
     const deleteInSub = (sub: Sub) => () => {
       curTrack.value?.subs.delete(sub)
     }
-
     const seek = (time: number) => {
       player.value?.seekTo(time, true)
     }
 
     // update routine
+    const updateCursor = async() => {
+      cursor.value = await player.value?.getCurrentTime() || 0
+    }
     const update = () => {
       window.requestAnimationFrame(update)
       updateCursor()
     }
 
-    const updateCursor = async() => {
-      cursor.value = await player.value?.getCurrentTime() || 0
-    }
-
-    const triggerPlay = () => {
-      if (state.value !== 1) player.value?.playVideo()
-      else player.value?.pauseVideo()
-    }
-
-    const addKeyControl = () => {
-      listenKey('Enter', true, addSubtitle)
-      listenKey(' ', true, triggerPlay)
-      // listenKey('s', true, saveSubtitles)
-      // listenKey('e', true, exportSRT)
-      // listenKey('i', true, importSRT)
-      // listenKey('h', true, triggerHelp)
-    }
-
+    // on mounted
     const listenKey = (key: string, ctrl: Boolean, f: Function) => {
       window.addEventListener('keydown', e => {
         if (e.key !== key) return
@@ -218,7 +217,18 @@ export default defineComponent({
         f()
       })
     }
-
+    const triggerPlay = () => {
+      if (state.value !== 1) player.value?.playVideo()
+      else player.value?.pauseVideo()
+    }
+    const addKeyControl = () => {
+      listenKey('Enter', true, addSubtitle)
+      listenKey(' ', true, triggerPlay)
+      // listenKey('s', true, saveSubtitles)
+      // listenKey('e', true, exportSRT)
+      // listenKey('i', true, importSRT)
+      // listenKey('h', true, triggerHelp)
+    }
     const tracksInit = async() => {
       video.value = await getVideoByIdRoute(videoId)()
       const newTracks = await getVideoTracksRoute(videoId)()
@@ -227,6 +237,7 @@ export default defineComponent({
       tracks.value.forEach(async t => {
         const subs = await getTrackInfosRoute(t._id)()
         t.subs.insertMany(subs.map(sub => ({
+          _id: sub._id,
           startTime: sub.startTime,
           endTime: sub.endTime || 0,
           text: sub.text,
@@ -247,6 +258,7 @@ export default defineComponent({
       curTrackId,
       curTrack,
       curSubs,
+      changeTrack,
       state,
       infoText,
       videoLength,
@@ -274,7 +286,8 @@ export default defineComponent({
   flex: 3 0 0
 #subtitle
   flex: 1 0 0
-
+#video-subs
+  bottom: 0
 #subs
   overflow-y: auto
 </style>
