@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/first
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 
 const host = 'http://localhost:1233'

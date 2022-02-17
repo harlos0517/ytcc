@@ -8,12 +8,20 @@
       input(type="text" v-model="videoLink")
       button.btn.btn-primary.m-2(@click="newVideo()"): | CREATE
     template(v-else)
-      form(action="http://localhost:1233/login/google" method="post")
+      form(:action="googleLoginUrl" method="post")
         input.btn.btn-primary.m-2(type="submit" value="Login with Google")
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, useRouter, computed, useStore } from '@nuxtjs/composition-api'
+import {
+  defineComponent,
+  ref,
+  onMounted,
+  useRouter,
+  computed,
+  useStore,
+  useContext,
+} from '@nuxtjs/composition-api'
 // import { StoreState } from '@/store'
 
 import { newVideo as newVideoRoute } from '@/routes/video'
@@ -29,6 +37,8 @@ export default defineComponent({
     const userEmail = computed(() => userStore.email)
     const loggedIn = computed(() => userStore.loggedIn)
 
+    const googleLoginUrl = `${useContext().$config.apiHost}/login/google`
+
     onMounted(() => {
     })
 
@@ -42,7 +52,7 @@ export default defineComponent({
       store.dispatch('user/logout')
     }
 
-    return { videoLink, userEmail, loggedIn, newVideo, logout }
+    return { videoLink, userEmail, loggedIn, newVideo, logout, googleLoginUrl }
   },
 })
 </script>

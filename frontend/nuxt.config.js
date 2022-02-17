@@ -1,5 +1,13 @@
+import FS from 'fs'
+import path from 'path'
+import * as dotenv from 'dotenv'
+dotenv.config({ path: path.resolve(__dirname, '../.env') })
+
 export default {
-  mode: 'spa',
+  ssr: false,
+
+  dev: process.env.MODE !== 'production',
+
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
     title: 'ytcc-frontend',
@@ -14,6 +22,15 @@ export default {
     ],
     link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
   },
+
+  server: process.env.mode === 'production'
+    ? {
+      https: {
+        key: FS.readFileSync(process.env.PRIVATE_KEY_PATH),
+        cert: FS.readFileSync(process.env.CERTIFICATE_PATH),
+      },
+    }
+    : { port: process.env.FRONTEND_PORT }, // default: 3000
 
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [],
@@ -55,5 +72,17 @@ export default {
   },
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
-  build: {},
+  build: {
+    extend(config) {
+      config.node = {
+        fs: 'empty',
+      }
+    },
+  },
+
+  publicRuntimeConfig: {
+    mode: process.env.MODE,
+    host: process.env.FRONTEND_HOST,
+    apiHost: process.env.BACKEND_HOST,
+  },
 }
