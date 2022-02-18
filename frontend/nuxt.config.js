@@ -51,6 +51,7 @@ export default {
     '@nuxt/typescript-build',
     '@nuxtjs/composition-api/module',
     '@nuxtjs/style-resources',
+    '@nuxtjs/google-analytics',
   ],
 
   styleResources: {
@@ -84,5 +85,10 @@ export default {
     mode: process.env.MODE,
     host: process.env.FRONTEND_URL,
     apiHost: process.env.BACKEND_URL,
+  },
+
+  googleAnalytics: {
+    id: process.env.GOOGLE_ANALYTICS_ID,
+    debug: 'enabled',
   },
 }
