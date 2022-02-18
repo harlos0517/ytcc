@@ -23,14 +23,14 @@ export default {
     link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
   },
 
-  server: process.env.mode === 'production'
-    ? {
-      https: {
-        key: FS.readFileSync(process.env.PRIVATE_KEY_PATH),
-        cert: FS.readFileSync(process.env.CERTIFICATE_PATH),
-      },
-    }
-    : { port: process.env.FRONTEND_PORT }, // default: 3000
+  server: {
+    https: process.env.MODE === 'production' ? {
+      key: FS.readFileSync(process.env.PRIVATE_KEY_PATH),
+      cert: FS.readFileSync(process.env.CERTIFICATE_PATH),
+    } : undefined,
+    host: process.env.FRONTEND_HOST,
+    port: process.env.FRONTEND_PORT,
+  }, // default: 3000
 
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [],
@@ -82,7 +82,7 @@ export default {
 
   publicRuntimeConfig: {
     mode: process.env.MODE,
-    host: process.env.FRONTEND_HOST,
-    apiHost: process.env.BACKEND_HOST,
+    host: process.env.FRONTEND_URL,
+    apiHost: process.env.BACKEND_URL,
   },
 }

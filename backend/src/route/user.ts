@@ -34,8 +34,8 @@ router.post('/login/google', passport.authenticate(
 
 router.get('/login/google/callback',
   passport.authenticate('google', {
-    successRedirect: `${process.env.FRONTEND_HOST}/`,
-    failureRedirect: `${process.env.FRONTEND_HOST}/`,
+    successRedirect: `${process.env.FRONTEND_URL}/`,
+    failureRedirect: `${process.env.FRONTEND_URL}/`,
   }),
 )
 

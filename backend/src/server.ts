@@ -27,7 +27,7 @@ App.use(bodyParser.json())
 App.use(bodyParser.urlencoded({ extended: true }))
 App.use(
   cors({
-    origin: [ process.env.FRONTEND_HOST || '' ],
+    origin: [ process.env.FRONTEND_URL || '' ],
     credentials: true,
   }),
 )
@@ -73,11 +73,12 @@ if (process.env.MODE === 'development'){
     key: privateKey,
     cert: certificate,
   }, App).listen(process.env.BACKEND_PORT)
+  console.log(`Express App listening on port ${process.env.BACKEND_PORT}`)
 }
 
-mongoose.connect(process.env.MONGO_DB_HOST || '', {
+mongoose.connect(process.env.MONGO_DB_URL || '', {
   user: process.env.MONGO_DB_USER,
   pass: process.env.MONGO_DB_PWD,
   authSource: 'admin',
 })
-console.log(`Connected to MongoDB ${process.env.MONGO_DB_HOST}`)
+console.log(`Connected to MongoDB ${process.env.MONGO_DB_URL}`)
