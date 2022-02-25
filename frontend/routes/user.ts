@@ -1,5 +1,5 @@
 import * as UserApi from '@api/user'
-import { axiosRequest, METHODS } from '@/routes/util'
+import { axiosRequest, METHODS } from '@/middleware/api'
 
 export const getMe = () =>
   axiosRequest<UserApi.GetMe.Response>(METHODS.GET, '/user/me')

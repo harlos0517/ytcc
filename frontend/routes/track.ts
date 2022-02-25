@@ -1,5 +1,5 @@
 import * as TrackApi from '@api/track'
-import { axiosRequest, METHODS } from '@/routes/util'
+import { axiosRequest, METHODS } from '@/middleware/api'
 
 export const getTrack = (trackId: string) =>
   axiosRequest<TrackApi.GetTrack.Response>(METHODS.GET, '/track/' + trackId)

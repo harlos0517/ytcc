@@ -40,7 +40,7 @@ export default {
     '@/plugins/vue-youtube/index.ts',
   ],
 
-  router: { middleware: ['auth'] },
+  router: { middleware: ['auth', 'api'] },
 
   // Auto import components: https://go.nuxtjs.dev/config-components
   components: true,
@@ -70,6 +70,7 @@ export default {
   axios: {
     // Workaround to avoid enforcing hard-coded localhost:3000: https://github.com/nuxt-community/axios-module/issues/308
     baseURL: '/',
+    credentials: true,
   },
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
@@ -85,6 +86,9 @@ export default {
     mode: process.env.MODE,
     host: process.env.FRONTEND_URL,
     apiHost: process.env.BACKEND_URL,
+    axios: {
+      baseURL: process.env.BACKEND_URL,
+    },
   },
 
   googleAnalytics: {

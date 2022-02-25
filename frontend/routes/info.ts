@@ -1,5 +1,5 @@
 import * as InfoApi from '@api/info'
-import { axiosRequest, METHODS } from '@/routes/util'
+import { axiosRequest, METHODS } from '@/middleware/api'
 
 export const getInfos = (ids: string[]) =>
   axiosRequest<InfoApi.GetInfos.Response>(

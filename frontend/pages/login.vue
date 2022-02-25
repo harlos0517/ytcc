@@ -21,7 +21,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, useStore, onMounted } from '@nuxtjs/composition-api'
+import { defineComponent, ref, computed, useStore, onMounted, useContext } from '@nuxtjs/composition-api'
 import { StoreState } from '@/store'
 
 import { getSecret as getSecretRoute } from '@/routes/user'
@@ -30,6 +30,7 @@ export default defineComponent({
   setup() {
     const store = useStore() as StoreState
     const userStore = store.state.user
+    const { $api } = useContext()
 
     const email = ref('')
     const password = ref('')
@@ -53,7 +54,7 @@ export default defineComponent({
     }
 
     const refresh = () => {
-      getSecretRoute()().then(newSecret => {
+      $api(getSecretRoute())().then(newSecret => {
         secret.value = newSecret
       }).catch(_ => { secret.value = '' })
     }

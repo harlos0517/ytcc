@@ -1,5 +1,5 @@
 import { GetterTree, ActionTree, MutationTree } from 'vuex'
-import { getMe, login, loginGoogle, logout } from '@/routes/user'
+import { logout } from '@/routes/user'
 
 export type UserState = {
   loggedIn: boolean
@@ -28,19 +28,13 @@ export const mutations: MutationTree<UserState> = {
 }
 
 export const actions: ActionTree<UserState, UserState> = {
-  login({ commit }, { email, password }) {
-    login()({ email, password }).then(_ => {
-      commit('setUser', email)
-    }).catch()
-  },
-  loginGoogle({ commit }) {
-    loginGoogle()().then(async _ => {
-      const user = await getMe()()
-      commit('setUser', user.email)
-    }).catch()
-  },
+  // login({ commit }, { email, password }) {
+  //   login()({ email, password }).then(_ => {
+  //     commit('setUser', email)
+  //   }).catch()
+  // },
   logout({ commit }) {
-    logout()().then(_ => {
+    logout()(this.$axios).then(_ => {
       commit('resetUser')
     }).catch()
   },

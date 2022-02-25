@@ -14,16 +14,18 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from '@nuxtjs/composition-api'
+import { defineComponent, ref, useContext } from '@nuxtjs/composition-api'
 import { register as registerRoute } from '@/routes/user'
 
 export default defineComponent({
   setup() {
+    const { $api } = useContext()
+
     const email = ref('')
     const password = ref('')
 
     const register = () => {
-      registerRoute()({
+      $api(registerRoute())({
         email: email.value,
         password: password.value,
       })

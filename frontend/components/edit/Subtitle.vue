@@ -21,7 +21,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, toRefs, onMounted, PropType } from '@nuxtjs/composition-api'
+import { defineComponent, toRefs, onMounted, PropType, useContext } from '@nuxtjs/composition-api'
 // import { StoreState } from '@/store
 
 import {
@@ -40,11 +40,12 @@ export default defineComponent({
   },
   setup(props) {
     // const store = useStore() as StoreState
+    const { $api } = useContext()
     const { videoLength, subtitle, deleteInSub } = toRefs(props)
 
     const saveSubtitle = () => {
       if (!subtitle.value._id) return
-      updateInfosRoute()([{
+      $api(updateInfosRoute())([{
         _id: subtitle.value._id,
         startTime: subtitle.value.startTime,
         endTime: subtitle.value.endTime,
@@ -54,7 +55,7 @@ export default defineComponent({
     const deleteSubtitle = () => {
       deleteInSub.value(subtitle.value)
       if (!subtitle.value._id) return
-      deleteInfosRoute([subtitle.value._id])()
+      $api(deleteInfosRoute([subtitle.value._id]))()
     }
 
     const timeDisplay = (time: number) =>

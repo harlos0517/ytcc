@@ -81,6 +81,7 @@ import {
   computed,
   onMounted,
   useRoute,
+  useContext,
 } from '@nuxtjs/composition-api'
 
 import { Video } from '@api/video'
@@ -113,6 +114,7 @@ export default defineComponent({
     const route = useRoute()
     const videoId = route.value.query.videoId as string
     const video = ref<Video | null>(null)
+    const { $api } = useContext()
 
     const youtube = ref<HTMLElement & { player: YouTubePlayer } | null>(null)
     const player = computed(() => youtube.value?.player)
@@ -170,13 +172,13 @@ export default defineComponent({
 
     // track operation
     const newTrack = async() => {
-      const track = await newTrackRoute()({ videoId })
+      const track = await $api(newTrackRoute())({ videoId })
       tracks.value.push({ ...track, subs: new Subtitles() })
       if (!curTrackId.value) curTrackId.value = tracks.value[0]?._id || ''
     }
     const deleteTrack = async(id: string, i: number) => {
       if (confirm('Are you sure to delete this track?')) {
-        await deleteTrackRoute(id)()
+        await $api(deleteTrackRoute(id))()
         tracks.value.splice(i, 1)
       }
     }
@@ -191,7 +193,7 @@ export default defineComponent({
       if (curTrack.value.subs) {
         const ret = curTrack.value.subs.insertMany(infos)
         const subs = ret.filter(s => s) as Sub[]
-        await newInfosRoute()(
+        await $api(newInfosRoute())(
           subs.map(sub => ({
             videoId,
             trackId: curTrackId.value,
@@ -200,9 +202,8 @@ export default defineComponent({
             text: sub.text,
           })),
         )
-      } else {
+      } else
         curTrack.value.subs = new Subtitles(infos)
-      }
     }
 
     // passing function to children
@@ -246,12 +247,12 @@ export default defineComponent({
       listenKey('h', true, triggerHelp)
     }
     const tracksInit = async() => {
-      video.value = await getVideoByIdRoute(videoId)()
-      const newTracks = await getVideoTracksRoute(videoId)()
+      video.value = await $api(getVideoByIdRoute(videoId))()
+      const newTracks = await $api(getVideoTracksRoute(videoId))()
       tracks.value = newTracks.map(t => ({ ...t, subs: new Subtitles() }))
       curTrackId.value = tracks.value[0]?._id || ''
       tracks.value.forEach(async t => {
-        const subs = await getTrackInfosRoute(t._id)()
+        const subs = await $api(getTrackInfosRoute(t._id))()
         t.subs.insertMany(subs.map(sub => ({
           _id: sub._id,
           startTime: sub.startTime,
@@ -288,10 +289,10 @@ export default defineComponent({
       if (!ele.files || !ele.files.length) return
       const srt = await ele.files[0]?.text()
       const subs = parseSRT(srt)
-      const track = await newTrackRoute()({ videoId })
+      const track = await $api(newTrackRoute())({ videoId })
       tracks.value.push({ ...track, subs: new Subtitles(subs) })
       if (!curTrackId.value) curTrackId.value = tracks.value[0]?._id || ''
-      await newInfosRoute()(subs.map(sub => ({
+      await $api(newInfosRoute())(subs.map(sub => ({
         ...sub,
         trackId: curTrackId.value,
         videoId,

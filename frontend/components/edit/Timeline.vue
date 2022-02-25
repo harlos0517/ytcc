@@ -206,11 +206,10 @@ export default defineComponent({
     // timeline events
     const timelineWheel = (e: WheelEvent) => {
       e.preventDefault()
-      if (e.ctrlKey) {
+      if (e.ctrlKey)
         timelineZoom(e.deltaY)
-      } else {
+      else
         timelineScroll(e.deltaY)
-      }
     }
     const timelineClick = () => {
       player.value?.seekTo(pointerTime.value, true)

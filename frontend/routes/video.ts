@@ -1,5 +1,5 @@
 import * as VideoApi from '@api/video'
-import { axiosRequest, METHODS } from '@/routes/util'
+import { axiosRequest, METHODS } from '@/middleware/api'
 
 export const newVideo = () =>
   axiosRequest<VideoApi.PostVideo.Response, VideoApi.PostVideo.Request>(METHODS.POST, '/video')

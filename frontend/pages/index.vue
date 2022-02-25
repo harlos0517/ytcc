@@ -32,6 +32,7 @@ export default defineComponent({
     const store = useStore() as StoreState
     const userStore = store.state.user
     const router = useRouter()
+    const { $api } = useContext()
 
     const videoLink = ref('')
     const userEmail = computed(() => userStore.email)
@@ -43,7 +44,7 @@ export default defineComponent({
     })
 
     const newVideo = () => {
-      newVideoRoute()({ videoLink: videoLink.value }).then(res => {
+      $api(newVideoRoute())({ videoLink: videoLink.value }).then(res => {
         router.push('/edit?videoId=' + res._id)
       })
     }
