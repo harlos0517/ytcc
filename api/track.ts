@@ -27,3 +27,5 @@ export namespace PutTrack {
   export type Request = Partial<TrackResponse> & { _id: string }
   export type Response = TrackResponse
 }
+
+export namespace DeleteTrack {}

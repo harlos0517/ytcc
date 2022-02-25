@@ -9,3 +9,6 @@ export const getTrackInfos = (trackId: string) =>
 
 export const newTrack = () =>
   axiosRequest<TrackApi.PostTrack.Response, TrackApi.PostTrack.Request>(METHODS.POST, '/track')
+
+export const deleteTrack = (trackId: string) =>
+  axiosRequest(METHODS.DELETE, '/track/' + trackId)

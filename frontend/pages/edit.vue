@@ -46,8 +46,9 @@
                 button.btn-close.close.btn-close-white(
                   type="button"
                   aria-label="Close"
-                  @click="deleteTrack(i)"
+                  @click="deleteTrack(t._id, i)"
                 )
+                  span(aria-hidden="true") &times;
             li.nav-item
               a.nav-link(@click="newTrack") +
         #subs.flex-fill.position-relative
@@ -92,6 +93,7 @@ import { newInfos as newInfosRoute } from '@/routes/info'
 import {
   getTrackInfos as getTrackInfosRoute,
   newTrack as newTrackRoute,
+  deleteTrack as deleteTrackRoute,
 } from '@/routes/track'
 
 import {
@@ -172,7 +174,12 @@ export default defineComponent({
       tracks.value.push({ ...track, subs: new Subtitles() })
       if (!curTrackId.value) curTrackId.value = tracks.value[0]?._id || ''
     }
-    const deleteTrack = () => {}
+    const deleteTrack = async(id: string, i: number) => {
+      if (confirm('Are you sure to delete this track?')) {
+        await deleteTrackRoute(id)()
+        tracks.value.splice(i, 1)
+      }
+    }
 
     const addSubtitle = async() => {
       if (!curTrack.value) return

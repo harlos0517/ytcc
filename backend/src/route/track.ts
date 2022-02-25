@@ -9,8 +9,8 @@ import { auth } from '@/middleware'
 const router = express.Router()
 
 router.get('/track/:id', auth, async(req, res, _next) => {
-  const videoId = req.params.id
-  const track = await TrackModel.findById(videoId).exec()
+  const trackId = req.params.id
+  const track = await TrackModel.findById(trackId).exec()
   if (!track) return res.sendStatus(400)
   const data: TrackApi.GetTrack.Response = track
   res.status(200).send({ data })
@@ -33,6 +33,14 @@ router.post('/track', auth, async(req, res, _next) => {
   })
   const data: TrackApi.PostTrack.Response = newTrack
   res.status(200).send({ data })
+})
+
+router.delete('/track/:id', auth, async(req, res, _next) => {
+  const trackId = req.params.id
+  const track = await TrackModel.findByIdAndRemove(trackId).exec()
+  if (!track) return res.sendStatus(400)
+  await InfoModel.deleteMany({ trackId })
+  res.sendStatus(200)
 })
 
 export default router
