@@ -18,10 +18,21 @@
     "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
     "arrow-parens": ["warn", "as-needed"],
     "brace-style": ["warn", "1tbs", { "allowSingleLine": true }],
-    "curly": ["off", "multi"],
+    "curly": ["warn", "multi"],
     "multiline-ternary": ["off"],
     "no-multiple-empty-lines": ["off"],
     "space-before-function-paren": ["warn", "never"],
-    "object-curly-spacing": ["warn", "always"]
+    "object-curly-spacing": ["warn", "always"],
+    "eol-last": ["warn", "always"],
+    "object-shorthand": ["warn", "always"],
+    "eqeqeq": ["warn", "always"],
+    "space-infix-ops": ["warn"],
+    "space-before-blocks": ["warn", "always"],
+    "keyword-spacing": ["warn"],
+    "arrow-spacing": ["warn"],
+    "key-spacing": ["warn", { "mode": "minimum" }],
+    "@typescript-eslint/type-annotation-spacing": ["warn"],
+    "comma-spacing": ["warn"],
+    "no-trailing-spaces": ["warn"]
   }
 }
