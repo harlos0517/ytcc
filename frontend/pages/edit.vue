@@ -41,8 +41,11 @@
         #tracks
           ul.nav.nav-tabs
             li.nav-item(v-for="(t, i) in tracks")
-              a.nav-link.btn(:class="{ active: t._id === curTrackId}")
-                span(@click="curTrackId = t._id") {{ i }}
+              a.nav-link.btn(
+                :class="{ active: t._id === curTrackId}"
+                @click="curTrackId = t._id"
+              )
+                span {{ i }}
                 button.btn-close.close.btn-close-white(
                   type="button"
                   aria-label="Close"
