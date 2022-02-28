@@ -33,9 +33,8 @@ export default {
       this.$emit('ready', e.target)
     },
     playerStateChange(e) {
-      if (e.data !== null && e.data !== PlayerStates.UNSTARTED) {
+      if (e.data !== null && e.data !== PlayerStates.UNSTARTED)
         this.$emit(this.events[e.data], e.target)
-      }
     },
     playerError(e) {
       this.$emit('error', e.target)

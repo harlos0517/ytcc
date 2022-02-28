@@ -21,7 +21,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, toRefs, onMounted, PropType, useContext } from '@nuxtjs/composition-api'
+import { defineComponent, toRefs, PropType, useContext } from '@nuxtjs/composition-api'
 // import { StoreState } from '@/store
 
 import {
@@ -60,8 +60,6 @@ export default defineComponent({
 
     const timeDisplay = (time: number) =>
       getTimeString(time, videoLength.value > 3600)
-
-    onMounted(() => {})
 
     return { saveSubtitle, deleteSubtitle, timeDisplay }
   },

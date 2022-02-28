@@ -4,7 +4,18 @@
     "browser": true,
     "node": true
   },
-  "extends": ["@nuxtjs/eslint-config-typescript", "plugin:nuxt/recommended"],
+  "parser": "vue-eslint-parser",
+  "parserOptions": {
+    "parser": "@typescript-eslint/parser",
+    "ecmaVersion": 12,
+    "sourceType": "module"
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:eqeqeq-fix/recommended",
+    "plugin:vue/vue3-recommended"
+  ],
   "plugins": ["@typescript-eslint"],
   "rules": {
     "indent": ["off", 2],

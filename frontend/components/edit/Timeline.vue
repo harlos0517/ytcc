@@ -196,9 +196,9 @@ export default defineComponent({
       const duration = sub.endTime - sub.startTime
       return timelineWidth.value * duration / timelineLength.value
     }
-    const isDragEnabled = (sub: any) => getSubWidth(sub) > 20
+    const isDragEnabled = (sub: Sub) => getSubWidth(sub) > 20
 
-    const isMoveEnabled = (sub: any) => getSubWidth(sub) > 10
+    const isMoveEnabled = (sub: Sub) => getSubWidth(sub) > 10
 
     const getDisplayPosition = (time: number) =>
       (time - timelineStart.value) / timelineLength.value * timelineWidth.value
@@ -330,7 +330,7 @@ export default defineComponent({
       sub.startTime = roundTime(sub.startTime + dt)
       sub.endTime = roundTime(sub.endTime + dt)
     }
-    const subDragPoint = (sub: any, type: string) => {
+    const subDragPoint = (sub: Sub, type: string) => {
       draggingSub.value = sub
       draggingType.value = type
       sub.dragPoint = roundTime(pointerTime.value)

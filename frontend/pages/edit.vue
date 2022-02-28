@@ -142,28 +142,28 @@ export default defineComponent({
     }
 
     // player events
-    const onReady = async(e: CustomEvent | any) => {
+    const onReady = async(e: CustomEvent) => {
       state.value = await player.value?.getPlayerState()
       videoLength.value = await player.value?.getDuration() || 60
       infoText.value = mapStateString(state.value)
     }
-    const onPlaying = (e: CustomEvent | any) => {
+    const onPlaying = (e: CustomEvent) => {
       state.value = PlayerStates.PLAYING
       infoText.value = PlayerStateString.PLAYING
     }
-    const onPaused = (e: CustomEvent | any) => {
+    const onPaused = (e: CustomEvent) => {
       state.value = PlayerStates.PAUSED
       infoText.value = PlayerStateString.PAUSED
     }
-    const onEnded = (e: CustomEvent | any) => {
+    const onEnded = (e: CustomEvent) => {
       state.value = PlayerStates.ENDED
       infoText.value = PlayerStateString.ENDED
     }
-    const onBuffering = (e: CustomEvent | any) => {
+    const onBuffering = (e: CustomEvent) => {
       state.value = PlayerStates.BUFFERING
       infoText.value = PlayerStateString.BUFFERING
     }
-    const onCued = async(e: CustomEvent | any) => {
+    const onCued = async(e: CustomEvent) => {
       videoLength.value = await player.value?.getDuration() || 60
       state.value = PlayerStates.VIDEO_CUED
       infoText.value = PlayerStateString.VIDEO_CUED
@@ -227,7 +227,7 @@ export default defineComponent({
     }
 
     // on mounted
-    const listenKey = (key: string, ctrl: Boolean, f: Function) => {
+    const listenKey = (key: string, ctrl: boolean, f: () => void) => {
       window.addEventListener('keydown', e => {
         if (e.key !== key) return
         if (ctrl !== e.ctrlKey) return

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { User } from '@/schema/user' // export interface User { _id: string, ... }
+import { UserDoc as User } from '@/schema/user' // export interface User { _id: string, ... }
 
 declare module 'passport' {
   interface Authenticator {

@@ -1,4 +1,5 @@
-// eslint-disable-next-line import/first
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { Context } from '@nuxt/types'
 import { AxiosRequestConfig, AxiosStatic } from 'axios'
 
