@@ -21,7 +21,7 @@ router.get('/video/:id/tracks', auth, async(req, res, _next) => {
   const { id } = req.params
   const videos = await TrackModel.find({
     videoId: id,
-    userId: req.session.user._id,
+    userId: req.session.user?._id,
   })
   const data: VideoApi.GetVideoTracks.Response = videos
   res.status(200).send({ data })
