@@ -40,12 +40,28 @@
             fill="#999999"
             font-size="10px"
           ) {{ getRulerText(x) }}
+    g#timeline-box
+      rect(
+        x="0"
+        :y="scrollbarHeight"
+        width="100%"
+        :height="timelineHeight"
+        fill="#00000000"
+        @click="timelineClick"
+      )
     g#timeline-subs
       g.timeline-track(
         v-for="(t, i) in tracks"
-        :fill="t._id === curTrackId ? '#FFFFFF22' : '#00000000'"
-        :style="{ opacity: t._id === curTrackId ? 1 : .5 }"
+        @click="changeTrackAndSeek(t._id)"
       )
+        rect.track-control(
+          :x="0"
+          :y="scrollbarHeight + rulerSpaceHeight + trackHeight * i"
+          :width="'100%'"
+          :height="trackHeight"
+          :fill="t._id === curTrackId ? '#FFFFFF22' : '#00000000'"
+          :style="{ opacity: t._id === curTrackId ? 1 : .5 }"
+        )
         g.position-absolute.timeline-sub.rounded.h-100(
           v-for="sub in t.subs.data"
         )
@@ -66,15 +82,6 @@
       :y2="timelineHeight"
       stroke="#FF0000"
     )
-    g#timeline-box
-      rect(
-        x="0"
-        :y="scrollbarHeight"
-        width="100%"
-        :height="timelineHeight"
-        fill="#00000000"
-        @click="timelineClick"
-      )
     g#timeline-subs-control(
       fill="#00000000"
     )
@@ -86,28 +93,28 @@
           v-for="sub in t.subs.data"
         )
           rect.move-target(
-            :x="getDisplayPosition(sub.startTime)"
+            :x="isSelfTarget(sub, 'move') ? 0 : getDisplayPosition(sub.startTime)"
             :y="scrollbarHeight + rulerSpaceHeight + trackHeight * i"
             rx="4"
-            :width="getSubWidth(sub)"
+            :width="isSelfTarget(sub, 'move') ? '100%' : getSubWidth(sub)"
             :height="trackHeight"
             :class="{ 'd-none': !isMoveEnabled(sub) }"
             @mousedown="subDragPoint(sub, 'move')"
           )
           rect.drag.drag-start(
-            :x="getDisplayPosition(sub.startTime)"
+            :x="isSelfTarget(sub, 'start') ? 0 : getDisplayPosition(sub.startTime)"
             :y="scrollbarHeight + rulerSpaceHeight + trackHeight * i"
             rx="4"
-            :width="10"
+            :width="isSelfTarget(sub, 'start') ? '100%' : 10"
             :height="trackHeight"
             :class="{ 'd-none': !isDragEnabled(sub) }"
             @mousedown="subDragPoint(sub, 'start')"
           )
           rect.drag.drag-end(
-            :x="getDisplayPosition(sub.endTime) - 10"
+            :x="isSelfTarget(sub, 'end') ? 0 : (getDisplayPosition(sub.endTime) - 10)"
             :y="scrollbarHeight + rulerSpaceHeight + trackHeight * i"
             rx="4"
-            :width="10"
+            :width="isSelfTarget(sub, 'end') ? '100%' : 10"
             :height="trackHeight"
             :class="{ 'd-none': !isDragEnabled(sub) }"
             @mousedown="subDragPoint(sub, 'end')"
@@ -115,11 +122,12 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, onMounted, toRefs, PropType } from '@nuxtjs/composition-api'
+import { defineComponent, ref, computed, onMounted, toRefs, PropType, useContext } from '@nuxtjs/composition-api'
 import { YouTubePlayer } from '@/plugins/vue-youtube'
 
 import { Sub, SubTrack } from '@/util/subtitle'
 import { getTimeString, roundTime } from '@/util/time'
+import { updateInfos } from '@/routes/info'
 
 export default defineComponent({
   props: {
@@ -137,7 +145,8 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const { videoLength, player, tracks } = toRefs(props)
+    const { videoLength, player, tracks, changeTrack } = toRefs(props)
+    const { $api } = useContext()
 
     const maxScale = computed(() =>
       videoLength.value / 2,
@@ -246,6 +255,10 @@ export default defineComponent({
       timelineStart.value += delta * timelineLength.value / 1000
       timelineScrollFix()
     }
+    const changeTrackAndSeek = (id: string) => {
+      changeTrack.value(id)
+      timelineClick()
+    }
 
     // rulers
     const rulers = [1, 10, 60, 600, 3600]
@@ -336,9 +349,19 @@ export default defineComponent({
       sub.dragPoint = roundTime(pointerTime.value)
     }
     const subDragEnd = () => {
+      const sub = draggingSub.value
       draggingSub.value = null
       draggingType.value = ''
+      if (!sub || !sub._id) return
+      $api(updateInfos())([{
+        _id: sub._id,
+        startTime: sub.startTime,
+        endTime: sub.endTime,
+        text: sub.text,
+      }])
     }
+    const isSelfTarget = (sub: Sub, type: string) =>
+      draggingSub.value === sub && draggingType.value === type
 
     // update routine
     const update = () => {
@@ -416,6 +439,7 @@ export default defineComponent({
       timelineWheel,
       timelineClick,
       timelineMapDragPoint,
+      changeTrackAndSeek,
 
       getRulerNum,
       getRulerTime,
@@ -429,6 +453,7 @@ export default defineComponent({
       getDisplayPosition,
 
       subDragPoint,
+      isSelfTarget,
     }
   },
 })
