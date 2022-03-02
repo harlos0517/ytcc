@@ -54,7 +54,7 @@
                 )
                   span(aria-hidden="true") &times;
             li.nav-item
-              a.nav-link(@click="newTrack")
+              a#add-track-btn.nav-link(@click="newTrack")
                 span(v-if="!tracks.length") Add track
                 span(v-else) +
         #subs.flex-fill.position-relative
@@ -353,9 +353,15 @@ export default defineComponent({
   flex: 3 0 0
 #subtitle
   flex: 1 0 0
+  #tracks
+    a.nav-link.btn:not(.active)
+      color: white
 #video-subs
   bottom: 0
   pointer-events: none
 #subs
   overflow-y: auto
+#add-track-btn
+  text-decoration: none
+  color: inherit
 </style>
