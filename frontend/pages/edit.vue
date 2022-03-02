@@ -90,6 +90,7 @@ import {
   computed,
   onMounted,
   useRoute,
+  useRouter,
   useContext,
 } from '@nuxtjs/composition-api'
 
@@ -121,6 +122,7 @@ export default defineComponent({
   setup() {
     // const store = useStore() as StoreState
     const route = useRoute()
+    const router = useRouter()
     const videoId = route.value.query.videoId as string
     const video = ref<Video | null>(null)
     const { $api } = useContext()
@@ -258,7 +260,14 @@ export default defineComponent({
       listenKey('h', true, triggerHelp)
     }
     const tracksInit = async() => {
-      video.value = await $api(getVideoByIdRoute(videoId))()
+      try {
+        video.value = await $api(getVideoByIdRoute(videoId))()
+      } catch (err) {
+        if (err === 'Not Authenticated') {
+          router.push('/')
+          return
+        }
+      }
       const newTracks = await $api(getVideoTracksRoute(videoId))()
       tracks.value = newTracks.map(t => ({ ...t, subs: new Subtitles() }))
       curTrackId.value = tracks.value[0]?._id || ''

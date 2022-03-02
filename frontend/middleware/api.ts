@@ -50,8 +50,8 @@ export const axiosRequest = <Data = undefined, Payload = undefined>(
       })
       .catch(err => {
         const error = err.response?.data.error as string
-        const fullError = `${err} \n${error}`
-        reject(fullError)
+        console.error(error)
+        reject(error)
       })
     })
 }
