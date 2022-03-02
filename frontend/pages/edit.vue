@@ -42,18 +42,21 @@
           ul.nav.nav-tabs
             li.nav-item(v-for="(t, i) in tracks")
               a.nav-link.btn(
-                :class="{ active: t._id === curTrackId}"
+                :class="{ active: t._id === curTrackId }"
                 @click="curTrackId = t._id"
               )
                 span {{ i }}
                 button.btn-close.close.btn-close-white(
+                  v-if="t._id === curTrackId"
                   type="button"
                   aria-label="Close"
                   @click="deleteTrack(t._id, i)"
                 )
                   span(aria-hidden="true") &times;
             li.nav-item
-              a.nav-link(@click="newTrack") +
+              a.nav-link(@click="newTrack")
+                span(v-if="!tracks.length") Add track
+                span(v-else) +
         #subs.flex-fill.position-relative
           .wrap.position-absolute.w-100
             EditSubtitle(
@@ -65,9 +68,12 @@
               :deleteInSub="deleteInSub(sub)"
             )
             button.btn.btn-dark.w-100.text-center.p-3(
+              v-if="curTrackId"
               type="button"
               @click="addSubtitle()"
-            ) +
+            )
+              span(v-if="!curSubs.length") Add subtitle
+              span(v-else) +
         #toolbar.flex-row.middle-center
           span.m-0.h2.text-monospace {{ getTimeText(cursor) }}
     #bot.d-flex.flex-row
@@ -177,12 +183,14 @@ export default defineComponent({
     const newTrack = async() => {
       const track = await $api(newTrackRoute())({ videoId })
       tracks.value.push({ ...track, subs: new Subtitles() })
-      if (!curTrackId.value) curTrackId.value = tracks.value[0]?._id || ''
+      curTrackId.value = track._id || ''
     }
     const deleteTrack = async(id: string, i: number) => {
       if (confirm('Are you sure to delete this track?')) {
         await $api(deleteTrackRoute(id))()
         tracks.value.splice(i, 1)
+        curTrackId.value =
+          tracks.value[i]?._id || tracks.value[i - 1]?._id || ''
       }
     }
 
@@ -297,9 +305,10 @@ export default defineComponent({
       if (!curTrackId.value) curTrackId.value = tracks.value[0]?._id || ''
       await $api(newInfosRoute())(subs.map(sub => ({
         ...sub,
-        trackId: curTrackId.value,
+        trackId: track._id,
         videoId,
       })))
+      curTrackId.value = track._id
       ele.value = ''
       infoText.value = 'IMPORTED'
     }
@@ -346,6 +355,7 @@ export default defineComponent({
   flex: 1 0 0
 #video-subs
   bottom: 0
+  pointer-events: none
 #subs
   overflow-y: auto
 </style>

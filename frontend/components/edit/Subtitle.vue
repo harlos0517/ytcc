@@ -1,5 +1,5 @@
 <template lang="pug">
-  .my-1.p-2.d-flex.flex-row.align-items-center.rounded(
+  .btn.btn-dark.my-1.p-2.d-flex.flex-row.align-items-center.rounded(
     :class="{'bg-secondary': subtitle.active}"
   )
     .time.mr-2.text-monospace.small(@click="seek(subtitle.startTime)")
@@ -66,4 +66,7 @@ export default defineComponent({
 })
 </script>
 
-<style lang="sass" scoped></style>
+<style lang="sass" scoped>
+.sub-item:hover
+  background: #23272b
+</style>
