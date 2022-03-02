@@ -3,6 +3,9 @@
 </template>
 
 <script lang="ts">
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-empty-function */
+
 import { defineComponent, ref, computed, useStore, onMounted } from '@nuxtjs/composition-api'
 // import { StoreState } from '@/store'
 

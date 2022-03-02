@@ -42,18 +42,21 @@
           ul.nav.nav-tabs
             li.nav-item(v-for="(t, i) in tracks")
               a.nav-link.btn(
-                :class="{ active: t._id === curTrackId}"
+                :class="{ active: t._id === curTrackId }"
                 @click="curTrackId = t._id"
               )
                 span {{ i }}
                 button.btn-close.close.btn-close-white(
+                  v-if="t._id === curTrackId"
                   type="button"
                   aria-label="Close"
                   @click="deleteTrack(t._id, i)"
                 )
                   span(aria-hidden="true") &times;
             li.nav-item
-              a.nav-link(@click="newTrack") +
+              a#add-track-btn.nav-link(@click="newTrack")
+                span(v-if="!tracks.length") Add track
+                span(v-else) +
         #subs.flex-fill.position-relative
           .wrap.position-absolute.w-100
             EditSubtitle(
@@ -65,9 +68,12 @@
               :deleteInSub="deleteInSub(sub)"
             )
             button.btn.btn-dark.w-100.text-center.p-3(
+              v-if="curTrackId"
               type="button"
               @click="addSubtitle()"
-            ) +
+            )
+              span(v-if="!curSubs.length") Add subtitle
+              span(v-else) +
         #toolbar.flex-row.middle-center
           span.m-0.h2.text-monospace {{ getTimeText(cursor) }}
     #bot.d-flex.flex-row
@@ -84,6 +90,7 @@ import {
   computed,
   onMounted,
   useRoute,
+  useRouter,
   useContext,
 } from '@nuxtjs/composition-api'
 
@@ -115,6 +122,7 @@ export default defineComponent({
   setup() {
     // const store = useStore() as StoreState
     const route = useRoute()
+    const router = useRouter()
     const videoId = route.value.query.videoId as string
     const video = ref<Video | null>(null)
     const { $api } = useContext()
@@ -142,28 +150,28 @@ export default defineComponent({
     }
 
     // player events
-    const onReady = async(e: CustomEvent | any) => {
+    const onReady = async(e: CustomEvent) => {
       state.value = await player.value?.getPlayerState()
       videoLength.value = await player.value?.getDuration() || 60
       infoText.value = mapStateString(state.value)
     }
-    const onPlaying = (e: CustomEvent | any) => {
+    const onPlaying = (e: CustomEvent) => {
       state.value = PlayerStates.PLAYING
       infoText.value = PlayerStateString.PLAYING
     }
-    const onPaused = (e: CustomEvent | any) => {
+    const onPaused = (e: CustomEvent) => {
       state.value = PlayerStates.PAUSED
       infoText.value = PlayerStateString.PAUSED
     }
-    const onEnded = (e: CustomEvent | any) => {
+    const onEnded = (e: CustomEvent) => {
       state.value = PlayerStates.ENDED
       infoText.value = PlayerStateString.ENDED
     }
-    const onBuffering = (e: CustomEvent | any) => {
+    const onBuffering = (e: CustomEvent) => {
       state.value = PlayerStates.BUFFERING
       infoText.value = PlayerStateString.BUFFERING
     }
-    const onCued = async(e: CustomEvent | any) => {
+    const onCued = async(e: CustomEvent) => {
       videoLength.value = await player.value?.getDuration() || 60
       state.value = PlayerStates.VIDEO_CUED
       infoText.value = PlayerStateString.VIDEO_CUED
@@ -177,12 +185,14 @@ export default defineComponent({
     const newTrack = async() => {
       const track = await $api(newTrackRoute())({ videoId })
       tracks.value.push({ ...track, subs: new Subtitles() })
-      if (!curTrackId.value) curTrackId.value = tracks.value[0]?._id || ''
+      curTrackId.value = track._id || ''
     }
     const deleteTrack = async(id: string, i: number) => {
       if (confirm('Are you sure to delete this track?')) {
         await $api(deleteTrackRoute(id))()
         tracks.value.splice(i, 1)
+        curTrackId.value =
+          tracks.value[i]?._id || tracks.value[i - 1]?._id || ''
       }
     }
 
@@ -227,7 +237,7 @@ export default defineComponent({
     }
 
     // on mounted
-    const listenKey = (key: string, ctrl: Boolean, f: Function) => {
+    const listenKey = (key: string, ctrl: boolean, f: () => void) => {
       window.addEventListener('keydown', e => {
         if (e.key !== key) return
         if (ctrl !== e.ctrlKey) return
@@ -250,7 +260,14 @@ export default defineComponent({
       listenKey('h', true, triggerHelp)
     }
     const tracksInit = async() => {
-      video.value = await $api(getVideoByIdRoute(videoId))()
+      try {
+        video.value = await $api(getVideoByIdRoute(videoId))()
+      } catch (err) {
+        if (err === 'Not Authenticated') {
+          router.push('/')
+          return
+        }
+      }
       const newTracks = await $api(getVideoTracksRoute(videoId))()
       tracks.value = newTracks.map(t => ({ ...t, subs: new Subtitles() }))
       curTrackId.value = tracks.value[0]?._id || ''
@@ -297,9 +314,10 @@ export default defineComponent({
       if (!curTrackId.value) curTrackId.value = tracks.value[0]?._id || ''
       await $api(newInfosRoute())(subs.map(sub => ({
         ...sub,
-        trackId: curTrackId.value,
+        trackId: track._id,
         videoId,
       })))
+      curTrackId.value = track._id
       ele.value = ''
       infoText.value = 'IMPORTED'
     }
@@ -344,8 +362,15 @@ export default defineComponent({
   flex: 3 0 0
 #subtitle
   flex: 1 0 0
+  #tracks
+    a.nav-link.btn:not(.active)
+      color: white
 #video-subs
   bottom: 0
+  pointer-events: none
 #subs
   overflow-y: auto
+#add-track-btn
+  text-decoration: none
+  color: inherit
 </style>

@@ -16,11 +16,11 @@ export const googleOauthCallback = (
   profile: Profile,
   done: VerifyCallback,
 ) => {
-  if(!profile.emails || !profile.emails.length)
+  if (!profile.emails || !profile.emails.length)
     return done('No email provided')
   const email = profile.emails[0].value
   UserModel.findOne({ email }).then(user => {
-    if (!user) {
+    if (!user)
       UserModel.create({
         googleId: profile.id,
         email,
@@ -28,7 +28,7 @@ export const googleOauthCallback = (
         req.session.user = user
         done(null, user)
       })
-    } else {
+     else {
       req.session.user = user
       done(null, user)
     }

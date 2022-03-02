@@ -57,13 +57,13 @@ passport.use(new passportGoogleOauth.Strategy(
 passport.serializeUser((user, done) => done(null, user))
 passport.deserializeUser((user, done) => done(null, user as UserApi.User))
 
-mongoose.Schema.Types.String.checkRequired(v => v != null)
+mongoose.Schema.Types.String.checkRequired(v => v !== null)
 App.use(userRouter)
 App.use(videoRouter)
 App.use(trackRouter)
 App.use(infoRouter)
 
-if (process.env.MODE === 'development'){
+if (process.env.MODE === 'development') {
   App.listen(process.env.BACKEND_PORT)
   console.log(`Express App listening on port ${process.env.BACKEND_PORT}`)
 } else if (process.env.MODE === 'production') {

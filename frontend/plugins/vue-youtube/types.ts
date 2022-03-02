@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 export enum PlayerStates {
   BUFFERING = 3,
   ENDED = 0,

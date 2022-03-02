@@ -1,4 +1,5 @@
-// eslint-disable-next-line import/first
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { Context } from '@nuxt/types'
 import { AxiosRequestConfig, AxiosStatic } from 'axios'
 
@@ -49,8 +50,8 @@ export const axiosRequest = <Data = undefined, Payload = undefined>(
       })
       .catch(err => {
         const error = err.response?.data.error as string
-        const fullError = `${err} \n${error}`
-        reject(fullError)
+        console.error(error)
+        reject(error)
       })
     })
 }

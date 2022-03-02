@@ -1,5 +1,5 @@
 <template lang="pug">
-  .my-1.p-2.d-flex.flex-row.align-items-center.rounded(
+  .btn.btn-dark.my-1.p-2.d-flex.flex-row.align-items-center.rounded(
     :class="{'bg-secondary': subtitle.active}"
   )
     .time.mr-2.text-monospace.small(@click="seek(subtitle.startTime)")
@@ -21,7 +21,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, toRefs, onMounted, PropType, useContext } from '@nuxtjs/composition-api'
+import { defineComponent, toRefs, PropType, useContext } from '@nuxtjs/composition-api'
 // import { StoreState } from '@/store
 
 import {
@@ -61,11 +61,12 @@ export default defineComponent({
     const timeDisplay = (time: number) =>
       getTimeString(time, videoLength.value > 3600)
 
-    onMounted(() => {})
-
     return { saveSubtitle, deleteSubtitle, timeDisplay }
   },
 })
 </script>
 
-<style lang="sass" scoped></style>
+<style lang="sass" scoped>
+.sub-item:hover
+  background: #23272b
+</style>

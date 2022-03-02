@@ -16,7 +16,6 @@
 import {
   defineComponent,
   ref,
-  onMounted,
   useRouter,
   computed,
   useStore,
@@ -39,9 +38,6 @@ export default defineComponent({
     const loggedIn = computed(() => userStore.loggedIn)
 
     const googleLoginUrl = `${useContext().$config.apiHost}/login/google`
-
-    onMounted(() => {
-    })
 
     const newVideo = () => {
       $api(newVideoRoute())({ videoLink: videoLink.value }).then(res => {

@@ -31,9 +31,9 @@ function toSeconds(time) {
     let s = t[2].split(',')
 
     // Just in case a . is decimal seperator
-    if (s.length === 1) {
+    if (s.length === 1)
       s = t[2].split('.')
-    }
+
 
     return parseFloat(t[0], 10) * 3600 + parseFloat(t[1], 10) * 60 + parseFloat(s[0], 10) + parseFloat(s[1], 10) / 1000
   } catch (e) {
@@ -52,9 +52,7 @@ function toSeconds(time) {
 function nextNonEmptyLine(linesArray, position) {
   let idx = position
 
-  while (!linesArray[idx]) {
-    idx++
-  }
+  while (!linesArray[idx]) idx++
 
   return idx
 }
@@ -69,9 +67,7 @@ function nextNonEmptyLine(linesArray, position) {
 function lastNonEmptyLine(linesArray) {
   let idx = linesArray.length - 1
 
-  while (idx >= 0 && !linesArray[idx]) {
-    idx--
-  }
+  while (idx >= 0 && !linesArray[idx]) idx--
 
   return idx
 }
@@ -120,15 +116,15 @@ export function parseSRT(data = '') {
 
     // So as to trim positioning information from end
     idx = time[1].indexOf(' ')
-    if (idx !== -1) {
+    if (idx !== -1)
       time[1] = time[1].substr(0, idx)
-    }
+
     sub.endTime = toSeconds(time[1])
 
     // Build single line of text from multi-line subtitle in file
-    while (i < endIdx && lines[i]) {
+    while (i < endIdx && lines[i])
       text.push(lines[i++])
-    }
+
 
     // Join into 1 line, SSA-style linebreaks
     // Strip out other SSA-style tags
