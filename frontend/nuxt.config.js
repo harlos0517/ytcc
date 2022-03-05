@@ -95,4 +95,10 @@ export default {
     id: process.env.GOOGLE_ANALYTICS_ID,
     debug: 'enabled',
   },
+
+  target: 'static',
+  
+  generate: {
+    dir: '../docs'
+  }
 }
