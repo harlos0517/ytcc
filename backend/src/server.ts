@@ -36,6 +36,10 @@ App.use(
     secret: 'ytcc',
     resave: false,
     saveUninitialized: false,
+    cookie: {
+      sameSite: 'none',
+      secure: true,
+    },
   }),
 )
 App.use(passport.initialize())
