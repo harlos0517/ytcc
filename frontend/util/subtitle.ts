@@ -1,4 +1,5 @@
 import { Track } from '@api/track'
+import { Info } from '@api/info'
 
 export type Sub = {
   _id?: string,
@@ -17,6 +18,15 @@ export class Subtitles {
   constructor(data?: Array<Sub>) {
     this.data = []
     if (data) this.insertMany(data)
+  }
+
+  static fromInfos(infos: (Info & { _id: string })[]) {
+    return new this(infos.map(info => ({
+      _id: info._id,
+      startTime: info.startTime,
+      endTime: info.endTime || 0,
+      text: info.text,
+    })))
   }
 
   insertMany(subs: Sub[]) {
