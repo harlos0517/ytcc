@@ -11,6 +11,8 @@ const TrackSchema = new mongoose.Schema({
   videoId: ObjectId,
   userId: ObjectId,
   type: String,
+  name: String,
+  public: Boolean,
   defaultStyle: {
     type: InfoStyleSchema,
     required: false,

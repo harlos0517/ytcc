@@ -45,7 +45,7 @@
                 :class="{ active: t._id === curTrackId }"
                 @click="curTrackId = t._id"
               )
-                span {{ i }}
+                span {{ t.name }}
                 button.btn-close.close.btn-close-white(
                   v-if="t._id === curTrackId"
                   type="button"
@@ -57,6 +57,7 @@
               a#add-track-btn.nav-link(@click="newTrack")
                 span(v-if="!tracks.length") Add track
                 span(v-else) +
+        EditTrackInfo(v-if="curTrack" :track="curTrack")
         #subs.flex-fill.position-relative
           .wrap.position-absolute.w-100
             EditSubtitle(

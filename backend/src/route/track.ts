@@ -28,6 +28,8 @@ router.post('/track', auth, async(req, res, _next) => {
   const newTrack = await TrackModel.create({
     videoId,
     userId: req.session.user?._id,
+    name: 'New Track',
+    public: false,
     type: 'cc',
     defaultStyle: null,
   })
@@ -35,10 +37,27 @@ router.post('/track', auth, async(req, res, _next) => {
   res.status(200).send({ data })
 })
 
+router.put('/track', auth, async(req, res, _next) => {
+  const track = req.body as TrackApi.PutTrack.Request
+
+  const target = { _id: track._id, userId: req.session.user?._id }
+  const newTrack = await TrackModel.findOne(target)
+  if (!newTrack) return res.sendStatus(404)
+
+  const updatedTrack = await TrackModel.findOneAndUpdate(target, track)
+  if (!updatedTrack) return res.sendStatus(404)
+
+  const data: TrackApi.PutTrack.Response = updatedTrack
+  res.status(200).send({ data })
+})
+
 router.delete('/track/:id', auth, async(req, res, _next) => {
   const trackId = req.params.id
-  const track = await TrackModel.findByIdAndRemove(trackId).exec()
-  if (!track) return res.sendStatus(400)
+  const target = { _id: trackId, userId: req.session.user?._id }
+  const track = await TrackModel.findOne(target)
+  if (!track) return res.sendStatus(404)
+
+  await TrackModel.findOneAndDelete(target).exec()
   await InfoModel.deleteMany({ trackId })
   res.sendStatus(200)
 })

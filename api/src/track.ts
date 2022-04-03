@@ -5,6 +5,8 @@ export type Track = {
   videoId: string
   userId: string
   type: string
+  name: string
+  public: boolean
   defaultStyle?: InfoStyle
 }
 
