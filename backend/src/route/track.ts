@@ -23,6 +23,20 @@ router.get('/track/:id/infos', auth, async(req, res, _next) => {
   res.status(200).send({ data })
 })
 
+router.get('/tracks/me', auth, async(req, res, _next) => {
+  const tracks = await TrackModel.find({ userId: req.session.user?._id })
+  const data: TrackApi.GetMyTracks.Response = tracks
+  res.status(200).send({ data })
+})
+
+router.get('/tracks/public', auth, async(req, res, _next) => {
+  const videoId = req.query.videoId
+  if (typeof videoId !== 'string') return res.sendStatus(400)
+  const tracks = await TrackModel.find({ videoId, public: true })
+  const data: TrackApi.GetPublicTracks.Response = tracks
+  res.status(200).send({ data })
+})
+
 router.post('/track', auth, async(req, res, _next) => {
   const { videoId } = req.body as TrackApi.PostTrack.Request
   const newTrack = await TrackModel.create({

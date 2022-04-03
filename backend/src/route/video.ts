@@ -1,7 +1,7 @@
 import express from 'express'
 import axios from 'axios'
 
-import { VideoModel } from '@/schema/video'
+import { VideoDoc, VideoModel } from '@/schema/video'
 import { TrackModel } from '@/schema/track'
 import * as VideoApi from '@api/video'
 
@@ -24,6 +24,24 @@ router.get('/video/:id/tracks', auth, async(req, res, _next) => {
     userId: req.session.user?._id,
   })
   const data: VideoApi.GetVideoTracks.Response = videos
+  res.status(200).send({ data })
+})
+
+router.get('/video/:id/tracks/public', auth, async(req, res, _next) => {
+  const { id } = req.params
+  const videos = await TrackModel.find({
+    videoId: id,
+    public: true,
+  })
+  const data: VideoApi.GetVideoPublicTracks.Response = videos
+  res.status(200).send({ data })
+})
+
+router.get('/videos/me', auth, async(req, res, _next) => {
+  const tracks = await TrackModel.find({ userId: req.session.user?._id })
+  const videoIds = [...new Set(tracks.map(track => String(track.videoId)))]
+  const videos = await Promise.all(videoIds.map(async id => await VideoModel.findById(id)))
+  const data: VideoApi.GetMyVideos.Response = videos.filter((x): x is (VideoDoc & { _id: string }) => !!x)
   res.status(200).send({ data })
 })
 

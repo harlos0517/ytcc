@@ -3,7 +3,9 @@
     span#title.display-1.my-5: strong YTCC
     .container.text-center(v-if="loggedIn")
       div Logged in as {{ userEmail }}
-      button.btn.btn-primary.my-2(@click="logout()") LOGOUT
+      .my-2
+        Nuxt-link.btn.btn-primary.mr-2(to="/me") MY TRACKS
+        button.btn.btn-primary(@click="logout()") LOGOUT
       div.my-3 Enter Video Link
         input.w-100(type="text" v-model="videoLink")
       button.btn.btn-primary.mr-2(@click="toVideoPage('edit')") CREATE

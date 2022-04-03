@@ -16,6 +16,14 @@ export namespace GetTrack {
   export type Response = TrackResponse
 }
 
+export namespace GetMyTracks {
+  export type Response = TrackResponse[]
+}
+
+export namespace GetPublicTracks {
+  export type Response = TrackResponse[]
+}
+
 export namespace GetTrackInfos {
   export type Response = InfoResponse[]
 }

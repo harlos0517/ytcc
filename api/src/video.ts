@@ -21,6 +21,14 @@ export namespace GetVideoTracks {
   export type Response = TrackResponse[]
 }
 
+export namespace GetVideoPublicTracks {
+  export type Response = TrackResponse[]
+}
+
+export namespace GetMyVideos {
+  export type Response = VideoResponse[]
+}
+
 export namespace PostVideo {
   export type Request = { videoLink: string }
   export type Response = VideoResponse
