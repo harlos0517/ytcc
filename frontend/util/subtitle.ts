@@ -1,14 +1,15 @@
 import { Track } from '@api/track'
+import { Info } from '@api/info'
 
 export type Sub = {
-  _id?: string,
-  startTime: number,
-  endTime: number,
-  text: string,
-  next?: Sub | null,
-  prev?: Sub | null,
-  dragPoint?: number,
-  active?: boolean,
+  _id?: string
+  startTime: number
+  endTime: number
+  text: string
+  next?: Sub | null
+  prev?: Sub | null
+  dragPoint?: number
+  active?: boolean
 }
 
 export class Subtitles {
@@ -17,6 +18,15 @@ export class Subtitles {
   constructor(data?: Array<Sub>) {
     this.data = []
     if (data) this.insertMany(data)
+  }
+
+  static fromInfos(infos: (Info & { _id: string })[]) {
+    return new this(infos.map(info => ({
+      _id: info._id,
+      startTime: info.startTime,
+      endTime: info.endTime || 0,
+      text: info.text,
+    })))
   }
 
   insertMany(subs: Sub[]) {

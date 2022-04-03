@@ -30,7 +30,12 @@ router.post('/infos', auth, async(req, res, _next) => {
 router.put('/infos', auth, async(req, res, _next) => {
   const infos = req.body as InfoApi.PutInfos.Request
   const newInfos = await Promise.all(infos.map(
-    info => InfoModel.findOneAndUpdate({ _id: info._id }, info),
+    async info => {
+      const target = { _id: info._id, userId: req.session.user?._id }
+      const newInfo = await InfoModel.findOne(target)
+      if (!newInfo) return null
+      return await InfoModel.findOneAndUpdate(target, info)
+    },
   ))
   const data: InfoApi.PutInfos.Response = newInfos
   res.status(200).send({ data })
@@ -39,9 +44,15 @@ router.put('/infos', auth, async(req, res, _next) => {
 router.delete('/infos', auth, async(req, res, _next) => {
   const ids = req.query.ids as string[] | undefined
   if (!ids) return res.sendStatus(400)
-  await Promise.all(ids.map(
-    id => InfoModel.findOneAndDelete({ _id: id }),
+  const result = await Promise.all(ids.map(
+    async id => {
+      const target = { _id: id, userId: req.session.user?._id }
+      const info = await InfoModel.findOne(target)
+      if (!info) return null
+      await InfoModel.findOneAndDelete(target).exec()
+    },
   ))
+  console.log(result)
   res.sendStatus(200)
 })
 
