@@ -1,4 +1,5 @@
 import { TrackResponse } from './track'
+import { UserResponse } from './user'
 
 export type Video = {
   type: string
@@ -22,7 +23,7 @@ export namespace GetVideoTracks {
 }
 
 export namespace GetVideoPublicTracks {
-  export type Response = TrackResponse[]
+  export type Response = (TrackResponse & { user: UserResponse | null })[]
 }
 
 export namespace GetMyVideos {

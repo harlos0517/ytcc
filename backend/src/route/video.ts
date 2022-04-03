@@ -3,6 +3,7 @@ import axios from 'axios'
 
 import { VideoDoc, VideoModel } from '@/schema/video'
 import { TrackModel } from '@/schema/track'
+import { UserModel } from '@/schema/user'
 import * as VideoApi from '@api/video'
 
 import { auth } from '@/middleware'
@@ -33,7 +34,12 @@ router.get('/video/:id/tracks/public', auth, async(req, res, _next) => {
     videoId: id,
     public: true,
   })
-  const data: VideoApi.GetVideoPublicTracks.Response = videos
+  const videosWithUsers = await Promise.all(videos.map(async video => {
+    const user = await UserModel.findById(video.userId)
+    // https://stackoverflow.com/questions/58126454/
+    return { ...video.toObject(), user }
+  }))
+  const data: VideoApi.GetVideoPublicTracks.Response = videosWithUsers
   res.status(200).send({ data })
 })
 

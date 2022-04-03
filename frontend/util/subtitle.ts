@@ -2,14 +2,14 @@ import { Track } from '@api/track'
 import { Info } from '@api/info'
 
 export type Sub = {
-  _id?: string,
-  startTime: number,
-  endTime: number,
-  text: string,
-  next?: Sub | null,
-  prev?: Sub | null,
-  dragPoint?: number,
-  active?: boolean,
+  _id?: string
+  startTime: number
+  endTime: number
+  text: string
+  next?: Sub | null
+  prev?: Sub | null
+  dragPoint?: number
+  active?: boolean
 }
 
 export class Subtitles {

@@ -5,7 +5,7 @@
         div.col.px-0
           select.w-100.h-100(v-model="selectedTrackId")
             option(value="") Please Select
-            option(v-for="track in trackList" :value="track._id") {{ track.name }}
+            option(v-for="track in trackList" :value="track._id") {{ track.name }} - {{ track.user.email }}
         div.col-auto.px-0
           button.btn.btn-primary(@click="addTrack(selectedTrackId)") ADD
       .row.mb-3(v-for="track in tracks")
@@ -32,7 +32,7 @@ import {
 } from '@nuxtjs/composition-api'
 
 import {
-  getVideoTracks as getVideoTracksRoute,
+  getVideoPublicTracks as getVideoPublicTracksRoute,
 } from '@/routes/video'
 
 import { SubTrack } from '@/util/subtitle'
@@ -55,8 +55,7 @@ export default defineComponent({
     const selectedTrackId = ref<string>('')
 
     onMounted(async() => {
-      const tracks = await $api(getVideoTracksRoute(videoId.value))()
-      trackList.value = tracks.map(t => ({ ...t, _id: t._id }))
+      trackList.value = await $api(getVideoPublicTracksRoute(videoId.value))()
     })
 
     return { trackList, selectedTrackId }
