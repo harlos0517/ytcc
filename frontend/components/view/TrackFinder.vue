@@ -5,12 +5,12 @@
         div.col.px-0
           select.w-100.h-100(v-model="selectedTrackId")
             option(value="") Please Select
-            option(v-for="track in trackList" :value="track._id") {{ track._id }}
+            option(v-for="track in trackList" :value="track._id") {{ track.name }}
         div.col-auto.px-0
           button.btn.btn-primary(@click="addTrack(selectedTrackId)") ADD
       .row.mb-3(v-for="track in tracks")
         div.col.d-flex.align-items-center
-          span {{ track._id }}
+          span {{ track.name }}
         div.col-auto
           button.btn.btn-danger(@click="removeTrack(track._id)") REMOVE
     button#track-finder-close.btn-close.close.btn-close-white.position-absolute(
@@ -36,6 +36,7 @@ import {
 } from '@/routes/video'
 
 import { SubTrack } from '@/util/subtitle'
+import { Track } from '@api/track'
 
 export default defineComponent({
   props: {
@@ -50,12 +51,12 @@ export default defineComponent({
 
     const { videoId } = toRefs(props)
 
-    const trackList = ref<{ _id: string }[]>([])
+    const trackList = ref<(Track & { _id: string })[]>([])
     const selectedTrackId = ref<string>('')
 
     onMounted(async() => {
       const tracks = await $api(getVideoTracksRoute(videoId.value))()
-      trackList.value = tracks.map(t => ({ _id: t._id }))
+      trackList.value = tracks.map(t => ({ ...t, _id: t._id }))
     })
 
     return { trackList, selectedTrackId }
