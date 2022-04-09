@@ -13,7 +13,7 @@
       #video-subs.w-100.position-absolute.text-center.h3
         div(v-for="t in tracks")
           div(v-for="sub in t.subs.data.filter(x=>x.active).reverse()")
-            | {{ sub.text }}
+            span {{ sub.text }}
     ViewTrackFinder(
       v-if='showTrackFinder'
       :videoId="videoId"
@@ -138,6 +138,9 @@ export default defineComponent({
 #video-subs
   bottom: 0
   pointer-events: none
+  span
+    background-color: #000000BB
+    border-radius: 5px
 #track-finder-button
   right: 1.5rem
   top: 4rem
