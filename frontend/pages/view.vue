@@ -1,19 +1,11 @@
 <template lang="pug">
   .fill-screen.flex-column.position-relative.bg-dark.text-white
-    #player.position-relative.flex-fill
-      youtube(
-        ref="youtube"
-        :video-id="video ? video.handle : ''"
-        resize
-        width="100%"
-        height="100%"
-        :resizeDelay="1"
-        fitParent
-      )
-      #video-subs.w-100.position-absolute.text-center.h3
-        div(v-for="t in tracks")
-          div(v-for="sub in t.subs.data.filter(x=>x.active).reverse()")
-            span {{ sub.text }}
+    VideoView(
+      ref="playerRef"
+      :videoId="video ? video.handle : ''"
+      :activeSubs="activeSubs"
+      :changeState="() => {}"
+    )
     ViewTrackFinder(
       v-if='showTrackFinder'
       :videoId="videoId"
@@ -62,12 +54,15 @@ export default defineComponent({
     const video = ref<Video | null>(null)
     const { $api } = useContext()
 
-    const youtube = ref<HTMLElement & { player: YouTubePlayer } | null>(null)
-    const player = computed(() => youtube.value?.player)
+    const playerRef = ref<(HTMLElement & { player: YouTubePlayer }) | null>(null)
+    const player = computed(() => playerRef.value?.player)
+
     const cursor = ref(0)
 
     const tracks = ref<SubTrack[]>([])
-
+    const activeSubs = computed(
+      () => tracks.value.map(t => t.subs.data.filter(x => x.active).reverse()).flat(),
+    )
     const showTrackFinder = ref(false)
 
     const tracksInit = async() => {
@@ -122,9 +117,11 @@ export default defineComponent({
 
     return {
       videoId,
-      youtube,
+      playerRef,
+      player,
       video,
       tracks,
+      activeSubs,
       showTrackFinder,
       addTrack,
       removeTrack,
