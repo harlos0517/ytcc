@@ -10,26 +10,14 @@
 
     #mid.flex-fill.flex-row.position-relative
       #video.flex-column
-        #player.position-relative.flex-fill
-          youtube(
-            ref="youtube"
-            :video-id="video ? video.handle : ''"
-            resize
-            width="100%"
-            height="100%"
-            :resizeDelay="1"
-            fitParent
-            @playing="onPlaying"
-            @ready="onReady"
-            @paused="onPaused"
-            @ended="onEnded"
-            @buffering="onBuffering"
-            @cued="onCued"
-          )
-          #video-subs.w-100.position-absolute.text-center.h3
-            div(v-for="t in tracks")
-              div(v-for="sub in t.subs.data.filter(x=>x.active).reverse()")
-                | {{ sub.text }}
+        VideoView(
+          ref="playerRef"
+          :videoId="video ? video.handle : ''"
+          :activeSubs="activeSubs"
+          :changeState="changeState"
+          :ready="onReady"
+          :cued="onCued"
+        )
         EditTimeline(
           :videoLength="videoLength"
           :player="player"
@@ -58,10 +46,11 @@
                 span(v-if="!tracks.length") Add track
                 span(v-else) +
         EditTrackInfo(v-if="curTrack" :track="curTrack")
-        #subs.flex-fill.position-relative
+        #subs.flex-fill.position-relative(ref="subsRef")
           .wrap.position-absolute.w-100
             EditSubtitle(
               v-for="(sub, i) in curSubs"
+              ref="subRef"
               :key="i"
               :subtitle="sub"
               :seek="seek"
@@ -94,6 +83,7 @@ import {
   useRouter,
   useContext,
 } from '@nuxtjs/composition-api'
+import Vue from 'vue/types/umd'
 
 import { Video } from '@api/video'
 
@@ -128,8 +118,9 @@ export default defineComponent({
     const video = ref<Video | null>(null)
     const { $api } = useContext()
 
-    const youtube = ref<HTMLElement & { player: YouTubePlayer } | null>(null)
-    const player = computed(() => youtube.value?.player)
+    const playerRef = ref<(HTMLElement & { player: YouTubePlayer }) | null>(null)
+    const player = computed(() => playerRef.value?.player)
+
     const state = ref(undefined as PlayerStates | undefined)
     // const curSub = ref(0)
     // const mousePosition = ref({ x: 0, y: 0 })
@@ -145,38 +136,30 @@ export default defineComponent({
       tracks.value.find(t => t._id === curTrackId.value),
     )
     const curSubs = computed(() => curTrack.value?.subs.data || [])
+    const activeSubs = computed(
+      () => tracks.value.map(t => t.subs.data.filter(x => x.active).reverse()).flat(),
+    )
+    const subsRef = ref<HTMLElement | null>(null)
+    const subRef = ref<Vue[]>([])
 
     const changeTrack = (id: string) => {
       curTrackId.value = id
     }
 
     // player events
-    const onReady = async(e: CustomEvent) => {
-      state.value = await player.value?.getPlayerState()
-      videoLength.value = await player.value?.getDuration() || 60
+    const changeState = (newState: PlayerStates) => {
+      state.value = newState
       infoText.value = mapStateString(state.value)
     }
-    const onPlaying = (e: CustomEvent) => {
-      state.value = PlayerStates.PLAYING
-      infoText.value = PlayerStateString.PLAYING
-    }
-    const onPaused = (e: CustomEvent) => {
-      state.value = PlayerStates.PAUSED
-      infoText.value = PlayerStateString.PAUSED
-    }
-    const onEnded = (e: CustomEvent) => {
-      state.value = PlayerStates.ENDED
-      infoText.value = PlayerStateString.ENDED
-    }
-    const onBuffering = (e: CustomEvent) => {
-      state.value = PlayerStates.BUFFERING
-      infoText.value = PlayerStateString.BUFFERING
-    }
-    const onCued = async(e: CustomEvent) => {
+
+    const onReady = async() => {
       videoLength.value = await player.value?.getDuration() || 60
-      state.value = PlayerStates.VIDEO_CUED
-      infoText.value = PlayerStateString.VIDEO_CUED
     }
+
+    const onCued = async() => {
+      videoLength.value = await player.value?.getDuration() || 60
+    }
+
 
     // display function
     const getTimeText = (time: number) =>
@@ -232,9 +215,28 @@ export default defineComponent({
     const updateCursor = async() => {
       cursor.value = await player.value?.getCurrentTime() || 0
     }
+    const scrollSubs = async() => {
+      if (player.value && await player.value.getPlayerState() === 1) {
+        const index = curSubs.value.findIndex(s => s.active)
+        const el = subRef.value[index]?.$el
+        if (el && subsRef.value && !isElementInViewport(el as HTMLElement, subsRef.value))
+          subRef.value[index]?.$el.scrollIntoView()
+      }
+    }
+    const isElementInViewport = (el: HTMLElement, parent: HTMLElement) => {
+      var rect = el.getBoundingClientRect()
+      var parentRect = parent.getBoundingClientRect()
+      return (
+        rect.top >= parentRect.top &&
+        rect.left >= parentRect.left &&
+        rect.bottom <= parentRect.bottom &&
+        rect.right <= parentRect.right
+      )
+    }
     const update = () => {
-      window.requestAnimationFrame(update)
       updateCursor()
+      scrollSubs()
+      window.requestAnimationFrame(update)
     }
 
     // on mounted
@@ -324,23 +326,23 @@ export default defineComponent({
     }
 
     return {
-      youtube,
       video,
       tracks,
       curTrackId,
       curTrack,
       curSubs,
+      activeSubs,
+      subsRef,
+      subRef,
       changeTrack,
       state,
       infoText,
       videoLength,
+      playerRef,
       player,
       cursor,
+      changeState,
       onReady,
-      onPlaying,
-      onPaused,
-      onEnded,
-      onBuffering,
       onCued,
       getTimeText,
       deleteTrack,
@@ -369,6 +371,9 @@ export default defineComponent({
 #video-subs
   bottom: 0
   pointer-events: none
+  span
+    background-color: #000000BB
+    border-radius: 5px
 #subs
   overflow-y: auto
 #add-track-btn

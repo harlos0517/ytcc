@@ -322,4 +322,7 @@ export default defineComponent({
 })
 </script>
 
-<style lang="sass" scoped></style>
+<style lang="sass" scoped>
+#timeline-map-svg
+  user-select: none
+</style>
