@@ -3,7 +3,7 @@ export type User = {
   googleId?: string
 }
 
-type UserResponse = User
+export type UserResponse = User
 
 export namespace Register {
   export type Request = {

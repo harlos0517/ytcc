@@ -5,22 +5,20 @@
     "moduleResolution": "Node",
     "lib": ["ESNext", "ESNext.AsyncIterable", "DOM"],
     "esModuleInterop": true,
-    "allowJs": true,
     "sourceMap": true,
     "strict": true,
-    "noEmit": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": false,
     "noUncheckedIndexedAccess": true,
+    "declaration": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"],
-      "@api/*": ["../api/src/*"]
+      "@/*": ["./src/*"],
     },
-    "types": ["@nuxt/types", "@nuxtjs/axios", "@types/node", "./declare"]
+    "types": [],
+    "rootDir": "src",
+    "outDir": "build",
+    "composite": true
   },
-  "exclude": ["node_modules", ".nuxt", "dist"],
-  "references": [
-    { "path": "../api" },
-  ],
+  "exclude": ["./build/**/*"],
 }
