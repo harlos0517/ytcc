@@ -58,10 +58,11 @@
                 span(v-if="!tracks.length") Add track
                 span(v-else) +
         EditTrackInfo(v-if="curTrack" :track="curTrack")
-        #subs.flex-fill.position-relative
+        #subs.flex-fill.position-relative(ref="subsRef")
           .wrap.position-absolute.w-100
             EditSubtitle(
               v-for="(sub, i) in curSubs"
+              ref="subRef"
               :key="i"
               :subtitle="sub"
               :seek="seek"
@@ -94,6 +95,7 @@ import {
   useRouter,
   useContext,
 } from '@nuxtjs/composition-api'
+import Vue from 'vue/types/umd'
 
 import { Video } from '@api/video'
 
@@ -145,6 +147,8 @@ export default defineComponent({
       tracks.value.find(t => t._id === curTrackId.value),
     )
     const curSubs = computed(() => curTrack.value?.subs.data || [])
+    const subsRef = ref<HTMLElement | null>(null)
+    const subRef = ref<Vue[]>([])
 
     const changeTrack = (id: string) => {
       curTrackId.value = id
@@ -232,9 +236,29 @@ export default defineComponent({
     const updateCursor = async() => {
       cursor.value = await player.value?.getCurrentTime() || 0
     }
+    const scrollSubs = async() => {
+      if (player.value && await player.value.getPlayerState() === 1) {
+        const index = curSubs.value.findIndex(s => s.active)
+        const el = subRef.value[index]?.$el
+        if (el && subsRef.value && !isElementInViewport(el as HTMLElement, subsRef.value))
+          subRef.value[index]?.$el.scrollIntoView()
+      }
+    }
+    const isElementInViewport = (el: HTMLElement, parent: HTMLElement) => {
+      var rect = el.getBoundingClientRect()
+      var parentRect = parent.getBoundingClientRect()
+      console.log(rect, parentRect)
+      return (
+        rect.top >= parentRect.top &&
+        rect.left >= parentRect.left &&
+        rect.bottom <= parentRect.bottom &&
+        rect.right <= parentRect.right
+      )
+    }
     const update = () => {
-      window.requestAnimationFrame(update)
       updateCursor()
+      scrollSubs()
+      window.requestAnimationFrame(update)
     }
 
     // on mounted
@@ -330,6 +354,8 @@ export default defineComponent({
       curTrackId,
       curTrack,
       curSubs,
+      subsRef,
+      subRef,
       changeTrack,
       state,
       infoText,
