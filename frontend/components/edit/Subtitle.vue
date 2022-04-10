@@ -8,9 +8,13 @@
       .end-time
         span {{ timeDisplay(subtitle.endTime) }}
     textarea.text.p-0.bg-dark.text-white.flex-fill.me-3(
+      ref="textareaRef"
       placeholder="Enter Subtitles Here"
       v-model="subtitle.text"
+      :style="{ height: textareaHeight + 'px' }"
       @blur="saveSubtitle"
+      @input="changeHeight"
+      @change="changeHeight"
     )
     button.btn-close.close.btn-close-white(
       type='button'
@@ -21,7 +25,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, toRefs, PropType, useContext } from '@nuxtjs/composition-api'
+import { defineComponent, toRefs, PropType, useContext, ref, onMounted } from '@nuxtjs/composition-api'
 // import { StoreState } from '@/store
 
 import {
@@ -43,6 +47,9 @@ export default defineComponent({
     const { $api } = useContext()
     const { videoLength, subtitle, deleteInSub } = toRefs(props)
 
+    const textareaRef = ref<HTMLElement | null>(null)
+    const textareaHeight = ref(50)
+
     const saveSubtitle = () => {
       if (!subtitle.value._id) return
       $api(updateInfosRoute())([{
@@ -58,10 +65,19 @@ export default defineComponent({
       $api(deleteInfosRoute([subtitle.value._id]))()
     }
 
+    const changeHeight = () => {
+      const inputRef = textareaRef.value
+      textareaHeight.value = inputRef ? inputRef.scrollHeight + 2 : 50
+    }
+
     const timeDisplay = (time: number) =>
       getTimeString(time, videoLength.value > 3600)
 
-    return { saveSubtitle, deleteSubtitle, timeDisplay }
+    onMounted(() => {
+      changeHeight()
+    })
+
+    return { textareaRef, textareaHeight, saveSubtitle, deleteSubtitle, changeHeight, timeDisplay }
   },
 })
 </script>
