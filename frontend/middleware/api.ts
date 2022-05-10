@@ -3,7 +3,7 @@
 import { Context } from '@nuxt/types'
 import { AxiosRequestConfig, AxiosStatic } from 'axios'
 
-import { Response } from '@api/index'
+import { ResponseData } from '@api/index'
 
 export enum METHODS {
   GET = 'GET',
@@ -19,6 +19,7 @@ export interface NuxtAxiosInstance extends AxiosStatic {
   $delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<T>
 }
 
+/* eslint-disable indent */
 export const axiosRequest = <Data = undefined, Payload = undefined>(
   method: METHODS,
   path: string,
@@ -44,7 +45,7 @@ export const axiosRequest = <Data = undefined, Payload = undefined>(
   const axiosConfig = { ...config }
 
   return new Promise((resolve: (data: Data) => void, reject: (err: string) => void) => {
-    axiosMethod<Response<Data>>(path, payload, axiosConfig)
+    axiosMethod<ResponseData<Data>>(path, payload, axiosConfig)
       .then(response => {
         resolve(response.data)
       })
@@ -55,6 +56,7 @@ export const axiosRequest = <Data = undefined, Payload = undefined>(
       })
     })
 }
+/* eslint-enable indent */
 
 
 export default (ctx: Context) => {
